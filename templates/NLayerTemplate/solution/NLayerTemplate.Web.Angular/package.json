@@ -12,7 +12,7 @@
   "dependencies": {
     "@angular/common": "^20.2.0",
     "@angular/compiler": "^20.2.0",
-    "@angular/core": "^20.2.0",
+    "@angular/core": "^20.3.28",
     "@angular/forms": "^20.2.0",
     "@angular/platform-browser": "^20.2.0",
     "@angular/platform-browser-dynamic": "^20.2.0",
