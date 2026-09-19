@@ -1,2 +1,2 @@
 # Normalize every detected text file to CRLF in the working tree.
-* text=auto eol=crlf
+* text=auto eol=lf
