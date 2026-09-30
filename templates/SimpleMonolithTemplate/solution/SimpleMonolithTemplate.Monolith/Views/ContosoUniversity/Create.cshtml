@@ -1,15 +1,15 @@
 ﻿@using SimpleMonolithTemplate.Monolith.Dtos.ContosoUniversity
-@model StudentDto
+@model TestStudentDto
 
 @{
-    ViewData["Title"] = "Create Student";
+    ViewData["Title"] = "Create TestStudent";
 }
 
 <div class="container mt-5">
     <div class="card shadow-sm rounded-3">
         <div class="card-header bg-primary text-white">
             <h4 class="mb-0">
-                <i class="bi bi-person-plus-fill me-2"></i> Create Student
+                <i class="bi bi-person-plus-fill me-2"></i> Create TestStudent
             </h4>
         </div>
 
@@ -23,7 +23,7 @@
                         src="@(string.IsNullOrEmpty(Model?.ImagePath)
                             ? Url.Content("~/images/defaults/default-person.png")
                             : Url.Content(Model.ImagePath))"
-                        alt="Student profile"
+                        alt="TestStudent profile"
                         class="img-thumbnail"
                         style="max-width: 150px;" />
                 </div>
@@ -58,9 +58,9 @@
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="EnrollmentDate" class="form-label fw-semibold"></label>
-                    <input asp-for="EnrollmentDate" class="form-control" type="date" />
-                    <span asp-validation-for="EnrollmentDate" class="text-danger"></span>
+                    <label asp-for="TestEnrollmentDate" class="form-label fw-semibold"></label>
+                    <input asp-for="TestEnrollmentDate" class="form-control" type="date" />
+                    <span asp-validation-for="TestEnrollmentDate" class="text-danger"></span>
                 </div>
 
                 <hr />

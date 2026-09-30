@@ -1,8 +1,8 @@
 ﻿@using SimpleMonolithTemplate.Monolith.Dtos.ContosoUniversity
-@model StudentDto
+@model TestStudentDto
 
 @{
-    ViewData["Title"] = "Delete Student";
+    ViewData["Title"] = "Delete TestStudent";
 }
 
 <div class="container mt-5">
@@ -10,7 +10,7 @@
         <div class="col-md-6">
             <div class="card shadow rounded-3 border">
                 <div class="card-header border-0 bg-danger text-white">
-                    <h4 class="mb-0">Delete Student</h4>
+                    <h4 class="mb-0">Delete TestStudent</h4>
                     <p class="text-danger">@ViewData["ErrorMessage"]</p>
                 </div>
                 <div class="card-body">
@@ -22,7 +22,7 @@
                              src="@(string.IsNullOrEmpty(Model?.ImagePath)
                                                              ? Url.Content("~/images/defaults/default-person.png")
                                                              : Url.Content(Model.ImagePath))"
-                             alt="Student profile"
+                             alt="TestStudent profile"
                              class="img-thumbnail"
                              style="max-width: 150px;" />
                     </div>
@@ -43,10 +43,10 @@
                         </dd>
 
                         <dt class="col-sm-4 fw-semibold text-secondary">
-                            @Html.DisplayNameFor(model => model.EnrollmentDate)
+                            @Html.DisplayNameFor(model => model.TestEnrollmentDate)
                         </dt>
                         <dd class="col-sm-8">
-                            @Html.DisplayFor(model => model.EnrollmentDate)
+                            @Html.DisplayFor(model => model.TestEnrollmentDate)
                         </dd>
                     </dl>
 
@@ -68,7 +68,7 @@
                     }
                     else
                     {
-                        <div class="alert alert-warning">Student not found.</div>
+                        <div class="alert alert-warning">TestStudent not found.</div>
                     }
                 </div>
             </div>

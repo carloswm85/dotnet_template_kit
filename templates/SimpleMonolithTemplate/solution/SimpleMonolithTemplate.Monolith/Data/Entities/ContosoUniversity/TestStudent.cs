@@ -1,10 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SimpleMonolithTemplate.Monolith.Data.Entities.ContosoUniversity;
 
-public partial class Student
+public partial class TestStudent
 {
-    public int Id { get; set; }
+    [Key]
+    public int TestStudentId { get; set; }
     public string GovernmentId { get; set; } = string.Empty;
 
     [Column("FirstName")]
@@ -16,7 +18,7 @@ public partial class Student
 
     public string? ImagePath { get; set; }
 
-    public DateOnly EnrollmentDate { get; set; }
+    public DateOnly TestEnrollmentDate { get; set; }
 
-    public List<Enrollment> Enrollments { get; set; } = [];
+    public List<TestEnrollment> TestEnrollments { get; set; } = [];
 }

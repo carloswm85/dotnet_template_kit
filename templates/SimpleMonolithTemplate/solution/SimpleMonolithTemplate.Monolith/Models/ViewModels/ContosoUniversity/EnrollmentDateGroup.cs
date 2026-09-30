@@ -2,10 +2,10 @@
 
 namespace SimpleMonolithTemplate.Monolith.Models.ViewModels.ContosoUniversity;
 
-public class EnrollmentDateGroup
+public class TestEnrollmentDateGroup
 {
     [DataType(DataType.Date)]
-    public DateTime? EnrollmentDate { get; set; }
+    public DateTime? TestEnrollmentDate { get; set; }
 
-    public int StudentCount { get; set; }
+    public int TestStudentCount { get; set; }
 }

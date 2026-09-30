@@ -2,5 +2,5 @@
 
 public static class DefaultImages
 {
-    public const string Student = "/images/defaults/default-person.png";
+    public const string TestTestStudent = "/images/defaults/default-person.png";
 }

@@ -3,9 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SimpleMonolithTemplate.Monolith.Data.Entities.ContosoUniversity;
 
-public partial class Instructor
+public partial class TestInstructor
 {
-    public int Id { get; set; }
+    [Key]
+    public int TestInstructorId { get; set; }
 
     [Required]
     [StringLength(50)]
@@ -35,6 +36,6 @@ public partial class Instructor
      * If you specify ICollection<T>, EF creates a HashSet<T> collection
      * by default.
      */
-    public ICollection<CourseAssignment> CourseAssignments { get; set; } = [];
-    public OfficeAssignment? OfficeAssignment { get; set; }
+    public ICollection<TestCourseAssignment> TestCourseAssignments { get; set; } = [];
+    public TestOfficeAssignment? TestOfficeAssignment { get; set; }
 }

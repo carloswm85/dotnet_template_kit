@@ -1,8 +1,8 @@
 ﻿namespace SimpleMonolithTemplate.Monolith.Data.Entities.ContosoUniversity;
 
-public class EnrollmentDateGroup
+public class TestEnrollmentDateGroup
 {
-    public int? EnrollmentYear { get; set; }
+    public int? TestEnrollmentYear { get; set; }
 
-    public int StudentCount { get; set; }
+    public int TestStudentCount { get; set; }
 }

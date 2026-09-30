@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SimpleMonolithTemplate.Monolith.Data.Entities.ContosoUniversity;
 
-public partial class Department
+public partial class TestDepartment
 {
-    public int DepartmentId { get; set; }
+    public int TestDepartmentId { get; set; }
 
     [Required]
     [StringLength(50, MinimumLength = 3)]
@@ -20,10 +20,10 @@ public partial class Department
     [Display(Name = "Start Date")]
     public DateTime StartDate { get; set; }
 
-    public int? InstructorId { get; set; }
+    public int? TestInstructorId { get; set; }
 
-    public Instructor? Administrator { get; set; }
-    public ICollection<Course> Courses { get; set; } = [];
+    public TestInstructor? Administrator { get; set; }
+    public ICollection<TestCourse> TestCourses { get; set; } = [];
 }
 
 /* By convention, the Entity Framework enables cascade delete for non-nullable
@@ -31,16 +31,16 @@ public partial class Department
 * cascade delete rules, which will cause an exception when you try to add a
 * migration.
 *
-* For example, if you didn't define the Department.InstructorID property as
+* For example, if you didn't define the TestDepartment.TestInstructorID property as
 * nullable, EF would configure a cascade delete rule to delete the department
 * when you delete the instructor, which isn't what you want to have happen.
-* If your business rules required the InstructorID property to be non-nullable,
+* If your business rules required the TestInstructorID property to be non-nullable,
 * you would have to use the following fluent API statement to disable cascade
 * delete on the relationship:
 */
 
 // C#
-// modelBuilder.Entity<Department>()
+// modelBuilder.Entity<TestDepartment>()
 //    .HasOne(d => d.Administrator)
 //    .WithMany()
 //    .OnDelete(DeleteBehavior.Restrict)

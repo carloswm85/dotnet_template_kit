@@ -25,52 +25,59 @@ public class ContosoUniversityService : IContosoUniversityService
         _context = context;
     }
 
-    public async Task<StudentDto?> GetStudentAsync(int studentId, bool asNoTracking = false)
+    public async Task<TestStudentDto?> GetTestStudentAsync(
+        int studentId,
+        bool asNoTracking = false,
+        CancellationToken cancellationToken = default
+    )
     {
-        Student? student;
+        TestStudent? student;
 
         if (asNoTracking)
         {
-            student = await _context.Students.FindAsync(studentId);
+            student = await _context.TestStudents.FindAsync([studentId], cancellationToken);
 
             if (student is null)
             {
                 return null;
             }
 
-            return _mapper.Map<StudentDto>(student);
+            return _mapper.Map<TestStudentDto>(student);
         }
 
         student = await _context
-            .Students.Include(s => s.Enrollments)
-                .ThenInclude(e => e.Course)
+            .TestStudents.Include(s => s.TestEnrollments)
+                .ThenInclude(e => e.TestCourse)
             .AsNoTracking()
-            .FirstOrDefaultAsync(m => m.Id == studentId);
+            .FirstOrDefaultAsync(m => m.TestStudentId == studentId, cancellationToken);
 
         if (student is null)
         {
             return null;
         }
 
-        return _mapper.Map<StudentDto>(student);
+        return _mapper.Map<TestStudentDto>(student);
     }
 
-    public async Task<IEnumerable<StudentDto>> GetStudentListAsync()
+    public async Task<IEnumerable<TestStudentDto>> GetTestStudentListAsync(
+        CancellationToken cancellationToken = default
+    )
     {
-        var students = await _context.Students.ToListAsync();
-        return _mapper.Map<IEnumerable<StudentDto>>(students);
+        var students = await _context.TestStudents.ToListAsync(cancellationToken);
+        return _mapper.Map<IEnumerable<TestStudentDto>>(students);
     }
 
-    public async Task<PaginatedList<StudentDto>> GetStudentsPaginatedListAsync(
+    public async Task<PaginatedList<TestStudentDto>> GetTestStudentsPaginatedListAsync(
         string currentFilter,
         int pageIndex,
         int pageSize,
         string searchString,
-        string sortOrder
+        string sortOrder,
+        CancellationToken cancellationToken = default
     )
     {
-        var students = _context.Students.AsQueryable();
-        var totalRecords = students.Count();
+        var students = _context.TestStudents.AsQueryable();
+        var totalRecords = await students.CountAsync(cancellationToken);
 
         // PAGING
         if (searchString != currentFilter)
@@ -87,7 +94,7 @@ public class ContosoUniversityService : IContosoUniversityService
                 s.LastName.ToUpper().Contains(term) || s.FirstMidName.ToUpper().Contains(term)
             );
         }
-        var filteredCount = students.Count();
+        var filteredCount = await students.CountAsync(cancellationToken);
 
         // SORTING
         switch (sortOrder)
@@ -96,22 +103,25 @@ public class ContosoUniversityService : IContosoUniversityService
                 students = students.OrderByDescending(s => s.LastName);
                 break;
             case CurrentSort.DateAsc:
-                students = students.OrderBy(s => s.EnrollmentDate);
+                students = students.OrderBy(s => s.TestEnrollmentDate);
                 break;
             case CurrentSort.DateDesc:
-                students = students.OrderByDescending(s => s.EnrollmentDate);
+                students = students.OrderByDescending(s => s.TestEnrollmentDate);
                 break;
             default:
                 students = students.OrderBy(s => s.LastName);
                 break;
         }
 
-        var count = students.Count();
-        var items = students.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToList();
+        var count = filteredCount;
+        var items = await students
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
 
-        var studentsDto = _mapper.Map<List<StudentDto>>(items);
+        var studentsDto = _mapper.Map<List<TestStudentDto>>(items);
 
-        return new PaginatedList<StudentDto>(
+        return new PaginatedList<TestStudentDto>(
             items: studentsDto,
             count: count,
             pageIndex: pageIndex,
@@ -121,17 +131,20 @@ public class ContosoUniversityService : IContosoUniversityService
         );
     }
 
-    public async Task<int> CreateStudentAsync(StudentDto studentDto)
+    public async Task<int> CreateTestStudentAsync(
+        TestStudentDto studentDto,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
-            var student = _mapper.Map<Student>(studentDto);
+            var student = _mapper.Map<TestStudent>(studentDto);
 
             student.GovernmentId = new string(student.GovernmentId.Where(char.IsDigit).ToArray());
 
-            await _context.Students.AddAsync(student);
-            await _context.SaveChangesAsync();
-            return student.Id;
+            await _context.TestStudents.AddAsync(student, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            return student.TestStudentId;
         }
         catch (DbUpdateException dbuex)
         {
@@ -140,59 +153,69 @@ public class ContosoUniversityService : IContosoUniversityService
         }
     }
 
-    public async Task<bool> UpdateStudentAsync(int studentId, StudentDto studentDto)
+    public async Task<bool> UpdateTestStudentAsync(
+        int studentId,
+        TestStudentDto studentDto,
+        CancellationToken cancellationToken = default
+    )
     {
         if (studentId <= 0 || studentDto == null)
             return false;
 
         studentDto.Id = studentId;
-        var student = _mapper.Map<Student>(studentDto);
+        var student = _mapper.Map<TestStudent>(studentDto);
+        student.TestStudentId = studentId;
 
         student.GovernmentId = new string(student.GovernmentId.Where(char.IsDigit).ToArray());
 
-        _context.Students.Update(student);
-        await _context.SaveChangesAsync();
+        _context.TestStudents.Update(student);
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    public bool StudentExists(int studentId)
+    public bool TestStudentExists(int studentId)
     {
-        return _context.Students.Any(s => s.Id == studentId);
+        return _context.TestStudents.Any(s => s.TestStudentId == studentId);
     }
 
-    public bool StudentExists(string governmentId)
+    public bool TestStudentExists(string governmentId)
     {
-        return _context.Students.Any(s => s.GovernmentId.Equals(governmentId));
+        return _context.TestStudents.Any(s => s.GovernmentId.Equals(governmentId));
     }
 
-    public async Task<bool> DeleteStudentAsync(int studentId)
+    public async Task<bool> DeleteTestStudentAsync(
+        int studentId,
+        CancellationToken cancellationToken = default
+    )
     {
         if (studentId <= 0)
             return false;
 
-        var student = await _context.Students.FindAsync(studentId);
+        var student = await _context.TestStudents.FindAsync([studentId], cancellationToken);
 
         if (student == null)
             return false;
 
-        _context.Students.Remove(student);
-        await _context.SaveChangesAsync();
+        _context.TestStudents.Remove(student);
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    public async Task<List<EnrollmentDateGroupDto>> GetEnrollmentDateDataAsync()
+    public async Task<List<TestEnrollmentDateGroupDto>> GetTestEnrollmentDateDataAsync(
+        CancellationToken cancellationToken = default
+    )
     {
-        var students = _context.Students.AsQueryable();
+        var students = _context.TestStudents.AsQueryable();
 
-        IQueryable<EnrollmentDateGroupDto> data =
+        IQueryable<TestEnrollmentDateGroupDto> data =
             from student in students
-            group student by student.EnrollmentDate.Year into dateGroup
-            select new EnrollmentDateGroupDto()
+            group student by student.TestEnrollmentDate.Year into dateGroup
+            select new TestEnrollmentDateGroupDto()
             {
-                EnrollmentYear = dateGroup.Key,
-                StudentCount = dateGroup.Count(),
+                TestEnrollmentYear = dateGroup.Key,
+                TestStudentCount = dateGroup.Count(),
             };
 
-        return await data.ToListAsync();
+        return await data.ToListAsync(cancellationToken);
     }
 }

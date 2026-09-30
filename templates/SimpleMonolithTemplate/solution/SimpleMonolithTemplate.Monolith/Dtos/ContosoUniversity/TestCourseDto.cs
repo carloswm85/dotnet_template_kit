@@ -1,10 +1,10 @@
 ﻿namespace SimpleMonolithTemplate.Monolith.Dtos.ContosoUniversity;
 
-public class CourseDto
+public class TestCourseDto
 {
     public int Id { get; set; }
     public required string Title { get; set; }
     public int Credits { get; set; }
 
-    public ICollection<EnrollmentDto>? Enrollments { get; set; }
+    public ICollection<TestEnrollmentDto>? TestEnrollments { get; set; }
 }
