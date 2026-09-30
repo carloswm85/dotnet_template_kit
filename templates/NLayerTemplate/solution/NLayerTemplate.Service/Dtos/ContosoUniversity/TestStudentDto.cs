@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
 
@@ -17,7 +17,7 @@ namespace NLayerTemplate.Service.Dtos.ContosoUniversity
     /// WHY IS THIS BAD EXAMPLE HERE:
     /// - For simplicity of the sample project
     /// </summary>
-    public class StudentDto
+    public class TestStudentDto
     {
         public int Id { get; set; }
 
@@ -75,18 +75,18 @@ namespace NLayerTemplate.Service.Dtos.ContosoUniversity
         public string? ImagePath { get; set; }
         public IFormFile? Image { get; set; }
 
-        [Required(ErrorMessage = "Enrollment date is required")]
+        [Required(ErrorMessage = "TestEnrollment date is required")]
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
-        [Display(Name = "Enrollment Date")]
+        [Display(Name = "TestEnrollment Date")]
         [DateRange(
             "1950-01-01",
             50,
-            ErrorMessage = "Enrollment Date must be between 1950 and 50 years from now"
+            ErrorMessage = "TestEnrollment Date must be between 1950 and 50 years from now"
         )]
-        public DateOnly? EnrollmentDate { get; set; }
+        public DateOnly? TestEnrollmentDate { get; set; }
 
-        public List<EnrollmentDto> Enrollments { get; set; } = [];
+        public List<TestEnrollmentDto> TestEnrollments { get; set; } = [];
     }
 
     /// <summary>

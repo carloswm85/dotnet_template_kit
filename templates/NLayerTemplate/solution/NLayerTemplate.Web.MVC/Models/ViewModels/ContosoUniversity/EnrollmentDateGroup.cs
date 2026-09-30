@@ -1,12 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace NLayerTemplate.Web.MVC.Models.ViewModels.Student
+namespace NLayerTemplate.Web.MVC.Models.ViewModels.TestStudent
 {
-    public class EnrollmentDateGroup
+    public class TestEnrollmentDateGroup
     {
         [DataType(DataType.Date)]
-        public DateTime? EnrollmentDate { get; set; }
+        public DateTime? TestEnrollmentDate { get; set; }
 
-        public int StudentCount { get; set; }
+        public int TestStudentCount { get; set; }
     }
 }

@@ -30,7 +30,7 @@ Content-Type: application/json
   "lastName": "Doe",
   "governmentId": "123456789",
   "enrollmentDate": "2026-01-01",
-  "Enrollments": []
+  "TestEnrollments": []
 }
 
 

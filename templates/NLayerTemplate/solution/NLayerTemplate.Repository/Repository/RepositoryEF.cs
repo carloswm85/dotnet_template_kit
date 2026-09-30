@@ -29,15 +29,24 @@ namespace NLayerTemplate.Repository
 
         public IQueryable<TEntity> Query() => _dbSet.AsQueryable();
 
-        public async Task<TEntity?> GetByIdAsync(params object[] keyValues) =>
-            await _dbSet.FindAsync(keyValues);
+        public async Task<TEntity?> GetByIdAsync(
+            object[] keyValues,
+            CancellationToken cancellationToken = default
+        ) => await _dbSet.FindAsync(keyValues, cancellationToken);
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync() => await _dbSet.ToListAsync();
+        public async Task<IEnumerable<TEntity>> GetAllAsync(
+            CancellationToken cancellationToken = default
+        ) => await _dbSet.ToListAsync(cancellationToken);
 
-        public async Task AddAsync(TEntity entity) => await _dbSet.AddAsync(entity);
+        public async Task AddAsync(
+            TEntity entity,
+            CancellationToken cancellationToken = default
+        ) => await _dbSet.AddAsync(entity, cancellationToken);
 
-        public async Task AddRangeAsync(IEnumerable<TEntity> entities) =>
-            await _dbSet.AddRangeAsync(entities);
+        public async Task AddRangeAsync(
+            IEnumerable<TEntity> entities,
+            CancellationToken cancellationToken = default
+        ) => await _dbSet.AddRangeAsync(entities, cancellationToken);
 
         public void Update(TEntity entity) => _dbSet.Update(entity);
 

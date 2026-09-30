@@ -1,9 +1,9 @@
-﻿namespace NLayerTemplate.Service.Dtos.ContosoUniversity
+namespace NLayerTemplate.Service.Dtos.ContosoUniversity
 {
-    public class EnrollmentDateGroupDto
+    public class TestEnrollmentDateGroupDto
     {
-        public int? EnrollmentYear { get; set; }
+        public int? TestEnrollmentYear { get; set; }
 
-        public int StudentCount { get; set; }
+        public int TestStudentCount { get; set; }
     }
 }

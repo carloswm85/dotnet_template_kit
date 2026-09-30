@@ -1,4 +1,4 @@
-﻿using NLayerTemplate.Data.Model;
+using NLayerTemplate.Data.Model;
 
 namespace NLayerTemplate.Repository
 {
@@ -14,9 +14,9 @@ namespace NLayerTemplate.Repository
 
         #region Contoso University Example
 
-        IRepository<Student> StudentRepository { get; }
-        IRepository<Course> CourseRepository { get; }
-        IRepository<Enrollment> EnrollmentRepository { get; }
+        IRepository<TestStudent> TestStudentRepository { get; }
+        IRepository<TestCourse> TestCourseRepository { get; }
+        IRepository<TestEnrollment> TestEnrollmentRepository { get; }
 
         #endregion
     }

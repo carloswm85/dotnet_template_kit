@@ -1,10 +1,10 @@
-﻿@using NLayerTemplate.Service.Dtos.ContosoUniversity
+@using NLayerTemplate.Service.Dtos.ContosoUniversity
 @using NLayerTemplate.Web.MVC.Models
 
-@model PaginatedListViewModel<StudentDto>
+@model PaginatedListViewModel<TestStudentDto>
 
 @{
-    ViewData["Title"] = "Students";
+    ViewData["Title"] = "TestStudents";
 }
 
 <div class="container mt-5">
@@ -143,7 +143,7 @@
                                        asp-route-currentFilter="@Model.CurrentFilter"
                                        asp-route-searchString="@Model.CurrentFilter"
                                        asp-route-pageSize="@Model.PageSize">
-                                        @Html.DisplayNameFor(model => model.PaginatedList[0].EnrollmentDate)
+                                        @Html.DisplayNameFor(model => model.PaginatedList[0].TestEnrollmentDate)
                                     </a>
                                 </th>
 
@@ -162,10 +162,10 @@
                                 <tr>
                                     <td>@item.LastName</td>
                                     <td>@item.FirstMidName</td>
-                                    @if (item.EnrollmentDate != null)
+                                    @if (item.TestEnrollmentDate != null)
                                     {
                                         <td>
-                                            @item.EnrollmentDate.Value.ToString("d")
+                                            @item.TestEnrollmentDate.Value.ToString("d")
                                         </td>
                                     }
                                     else

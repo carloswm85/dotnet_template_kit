@@ -1,8 +1,8 @@
-﻿@using NLayerTemplate.Service.Dtos.ContosoUniversity
-@model StudentDto
+@using NLayerTemplate.Service.Dtos.ContosoUniversity
+@model TestStudentDto
 
 @{
-    ViewData["Title"] = "Edit Student";
+    ViewData["Title"] = "Edit TestStudent";
 }
 
 <div class="container my-5">
@@ -10,7 +10,7 @@
         <div class="col-md-6">
             <div class="card shadow-lg rounded-3">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Edit Student</h4>
+                    <h4 class="mb-0">Edit TestStudent</h4>
                 </div>
                 <div class="card-body">
 
@@ -32,7 +32,7 @@
                                 src="@(string.IsNullOrEmpty(Model?.ImagePath)
                                     ? Url.Content("~/images/defaults/default-person.png")
                                     : Url.Content(Model.ImagePath))"                                
-                                alt="Student profile"
+                                alt="TestStudent profile"
                                 class="img-thumbnail"
                                 style="max-width: 150px;" />
                         </div>
@@ -67,9 +67,9 @@
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="EnrollmentDate" class="form-label fw-semibold"></label>
-                            <input asp-for="EnrollmentDate" class="form-control" type="date" />
-                            <span asp-validation-for="EnrollmentDate" class="text-danger small"></span>
+                            <label asp-for="TestEnrollmentDate" class="form-label fw-semibold"></label>
+                            <input asp-for="TestEnrollmentDate" class="form-control" type="date" />
+                            <span asp-validation-for="TestEnrollmentDate" class="text-danger small"></span>
                         </div>
 
                         <hr />

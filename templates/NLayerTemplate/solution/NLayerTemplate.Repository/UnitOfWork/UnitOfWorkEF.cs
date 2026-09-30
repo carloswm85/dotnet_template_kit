@@ -1,4 +1,4 @@
-﻿using NLayerTemplate.Data.Model;
+using NLayerTemplate.Data.Model;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace NLayerTemplate.Repository
@@ -10,9 +10,9 @@ namespace NLayerTemplate.Repository
         private readonly NLayerTemplateDbContext _dbContext;
         private IDbContextTransaction? _currentTransaction;
 
-        private IRepository<Student>? _studentRepository;
-        private IRepository<Course>? _courseRepository;
-        private IRepository<Enrollment>? _enrollmentRepository;
+        private IRepository<TestStudent>? _studentRepository;
+        private IRepository<TestCourse>? _courseRepository;
+        private IRepository<TestEnrollment>? _enrollmentRepository;
 
         #endregion
 
@@ -23,13 +23,13 @@ namespace NLayerTemplate.Repository
 
         #region Contoso University Example
 
-        public IRepository<Student> StudentRepository =>
-            _studentRepository ?? (_studentRepository = new RepositoryEF<Student>(_dbContext));
-        public IRepository<Course> CourseRepository =>
-            _courseRepository ?? (_courseRepository = new RepositoryEF<Course>(_dbContext));
-        public IRepository<Enrollment> EnrollmentRepository =>
+        public IRepository<TestStudent> TestStudentRepository =>
+            _studentRepository ?? (_studentRepository = new RepositoryEF<TestStudent>(_dbContext));
+        public IRepository<TestCourse> TestCourseRepository =>
+            _courseRepository ?? (_courseRepository = new RepositoryEF<TestCourse>(_dbContext));
+        public IRepository<TestEnrollment> TestEnrollmentRepository =>
             _enrollmentRepository
-            ?? (_enrollmentRepository = new RepositoryEF<Enrollment>(_dbContext));
+            ?? (_enrollmentRepository = new RepositoryEF<TestEnrollment>(_dbContext));
 
         #endregion
 

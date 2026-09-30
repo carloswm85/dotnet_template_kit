@@ -1,4 +1,4 @@
-﻿using NLayerTemplate.Web.MVC;
+using NLayerTemplate.Web.MVC;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
@@ -22,7 +22,7 @@ public class MvcEndpointsAvailabilityTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public async Task StudentsListPage_ReturnsSuccessStatusCode()
+    public async Task TestStudentsListPage_ReturnsSuccessStatusCode()
     {
         var response = await _client.GetAsync(
             "/ContosoUniversity/List",
@@ -34,7 +34,7 @@ public class MvcEndpointsAvailabilityTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public async Task StudentsStatistics_ReturnsSuccessStatusCode()
+    public async Task TestStudentsStatistics_ReturnsSuccessStatusCode()
     {
         var response = await _client.GetAsync(
             "/ContosoUniversity/Statistics",
@@ -46,7 +46,7 @@ public class MvcEndpointsAvailabilityTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public async Task NewStudentCreation_ReturnsSuccessStatusCode()
+    public async Task NewTestStudentCreation_ReturnsSuccessStatusCode()
     {
         var response = await _client.GetAsync(
             "/ContosoUniversity/Create",
@@ -58,7 +58,7 @@ public class MvcEndpointsAvailabilityTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public async Task SelectedStudentDetails_ReturnsSuccessStatusCode()
+    public async Task SelectedTestStudentDetails_ReturnsSuccessStatusCode()
     {
         var response = await _client.GetAsync(
             "/ContosoUniversity/Details/40",
@@ -70,7 +70,7 @@ public class MvcEndpointsAvailabilityTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public async Task SelectedStudentDelete_ReturnsSuccessStatusCode()
+    public async Task SelectedTestStudentDelete_ReturnsSuccessStatusCode()
     {
         var response = await _client.GetAsync(
             "/ContosoUniversity/Delete/40",
@@ -82,7 +82,7 @@ public class MvcEndpointsAvailabilityTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public async Task SelectedStudentEdit_ReturnsSuccessStatusCode()
+    public async Task SelectedTestStudentEdit_ReturnsSuccessStatusCode()
     {
         var response = await _client.GetAsync(
             "/ContosoUniversity/Edit/40",

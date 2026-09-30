@@ -1,4 +1,4 @@
-﻿using NLayerTemplate.Data.Model;
+using NLayerTemplate.Data.Model;
 using NLayerTemplate.Repository;
 using NLayerTemplate.Service.Dtos.ContosoUniversity;
 using NLayerTemplate.Service.Services.ExampleServices;
@@ -12,26 +12,30 @@ namespace NLayerTemplate.Testing.Unit.Services;
 public class ContosoUniversityServiceUnitTests
 {
     [Fact]
-    public async Task GetStudentAsync_AsNoTracking_ReturnsMappedStudentDto()
+    public async Task GetTestStudentAsync_AsNoTracking_ReturnsMappedTestStudentDto()
     {
         // Arrange
-        var mockRepo = new Mock<IRepository<Student>>();
+        var mockRepo = new Mock<IRepository<TestStudent>>();
         var mockUow = new Mock<IUnitOfWork>();
         var mockMapper = new Mock<IMapper>();
         var mockLogger = new Mock<ILogger<ContosoUniversityService>>();
 
-        var student = new Student
+        var student = new TestStudent
         {
-            Id = 1,
+            TestStudentId = 1,
             GovernmentId = "12345678",
             LastName = "Doe",
             FirstMidName = "John",
         };
 
-        mockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(student);
-        mockUow.Setup(u => u.StudentRepository).Returns(mockRepo.Object);
+        mockRepo
+            .Setup(r =>
+                r.GetByIdAsync(It.IsAny<object[]>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(student);
+        mockUow.Setup(u => u.TestStudentRepository).Returns(mockRepo.Object);
 
-        var expectedDto = new StudentDto
+        var expectedDto = new TestStudentDto
         {
             Id = 1,
             GovernmentId = "12345678",
@@ -39,12 +43,12 @@ public class ContosoUniversityServiceUnitTests
             FirstMidName = "John",
         };
         mockMapper
-            .Setup(m => m.Map<StudentDto>(It.IsAny<Student>()))
+            .Setup(m => m.Map<TestStudentDto>(It.IsAny<TestStudent>()))
             .Returns(
-                (Student s) =>
-                    new StudentDto
+                (TestStudent s) =>
+                    new TestStudentDto
                     {
-                        Id = s.Id,
+                        Id = s.TestStudentId,
                         GovernmentId = s.GovernmentId,
                         LastName = s.LastName,
                         FirstMidName = s.FirstMidName,
@@ -58,46 +62,53 @@ public class ContosoUniversityServiceUnitTests
         );
 
         // Act
-        var result = await service.GetStudentAsync(1, asNoTracking: true);
+        var result = await service.GetTestStudentAsync(
+            1,
+            asNoTracking: true,
+            TestContext.Current.CancellationToken
+        );
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal(expectedDto.Id, result!.Id);
         Assert.Equal(expectedDto.GovernmentId, result.GovernmentId);
-        mockRepo.Verify(r => r.GetByIdAsync(1), Times.Once);
+        mockRepo.Verify(
+            r => r.GetByIdAsync(It.IsAny<object[]>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
-    public async Task CreateStudentAsync_AddsStudentAndReturnsId()
+    public async Task CreateTestStudentAsync_AddsTestStudentAndReturnsId()
     {
         // Arrange
-        var mockRepo = new Mock<IRepository<Student>>();
+        var mockRepo = new Mock<IRepository<TestStudent>>();
         var mockUow = new Mock<IUnitOfWork>();
         var mockMapper = new Mock<IMapper>();
         var mockLogger = new Mock<ILogger<ContosoUniversityService>>();
 
-        var dto = new StudentDto
+        var dto = new TestStudentDto
         {
             GovernmentId = "ABC-12-3456",
             LastName = "Smith",
             FirstMidName = "Anna",
         };
-        var mappedStudent = new Student
+        var mappedTestStudent = new TestStudent
         {
             GovernmentId = "ABC-12-3456",
             LastName = "Smith",
             FirstMidName = "Anna",
         };
 
-        mockMapper.Setup(m => m.Map<Student>(It.IsAny<StudentDto>())).Returns(mappedStudent);
+        mockMapper.Setup(m => m.Map<TestStudent>(It.IsAny<TestStudentDto>())).Returns(mappedTestStudent);
 
-        // When AddAsync is called, set the Id to simulate DB behaviour
+        // When AddAsync is called, set the ID to simulate database behavior.
         mockRepo
-            .Setup(r => r.AddAsync(It.IsAny<Student>()))
+            .Setup(r => r.AddAsync(It.IsAny<TestStudent>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask)
-            .Callback<Student>(s => s.Id = 42);
+            .Callback<TestStudent, CancellationToken>((s, _) => s.TestStudentId = 42);
 
-        mockUow.Setup(u => u.StudentRepository).Returns(mockRepo.Object);
+        mockUow.Setup(u => u.TestStudentRepository).Returns(mockRepo.Object);
         mockUow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var service = new ContosoUniversityService(
@@ -107,11 +118,17 @@ public class ContosoUniversityServiceUnitTests
         );
 
         // Act
-        var createdId = await service.CreateStudentAsync(dto);
+        var createdId = await service.CreateTestStudentAsync(
+            dto,
+            TestContext.Current.CancellationToken
+        );
 
         // Assert
         Assert.Equal(42, createdId);
-        mockRepo.Verify(r => r.AddAsync(It.IsAny<Student>()), Times.Once);
+        mockRepo.Verify(
+            r => r.AddAsync(It.IsAny<TestStudent>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
         mockUow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

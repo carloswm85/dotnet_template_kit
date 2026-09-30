@@ -1,27 +1,46 @@
-﻿using NLayerTemplate.Service.Dtos.ContosoUniversity;
+using NLayerTemplate.Service.Dtos.ContosoUniversity;
 using NLayerTemplate.Service.Models;
 
 namespace NLayerTemplate.Service.Services.ExampleServices.Interfaces
 {
     public interface IContosoUniversityService
     {
-        #region Student
+        #region TestStudent
 
-        Task<bool> DeleteStudentAsync(int studentId);
-        Task<StudentDto?> GetStudentAsync(int studentId, bool asNoTracking = false);
-        Task<IEnumerable<StudentDto>> GetStudentListAsync();
-        Task<PaginatedList<StudentDto>> GetStudentsPaginatedListAsync(
+        Task<bool> DeleteTestStudentAsync(
+            int studentId,
+            CancellationToken cancellationToken = default
+        );
+        Task<TestStudentDto?> GetTestStudentAsync(
+            int studentId,
+            bool asNoTracking = false,
+            CancellationToken cancellationToken = default
+        );
+        Task<IEnumerable<TestStudentDto>> GetTestStudentListAsync(
+            CancellationToken cancellationToken = default
+        );
+        Task<PaginatedList<TestStudentDto>> GetTestStudentsPaginatedListAsync(
             string currentFilter,
             int pageIndex,
             int pageSize,
             string searchString,
-            string sortOrder
+            string sortOrder,
+            CancellationToken cancellationToken = default
         );
-        Task<int> CreateStudentAsync(StudentDto studentDto);
-        bool StudentExists(int studentId);
-        bool StudentExists(string governmentId);
-        Task<bool> UpdateStudentAsync(int studentId, StudentDto studentDto);
-        Task<List<EnrollmentDateGroupDto>> GetEnrollmentDateDataAsync();
+        Task<int> CreateTestStudentAsync(
+            TestStudentDto studentDto,
+            CancellationToken cancellationToken = default
+        );
+        bool TestStudentExists(int studentId);
+        bool TestStudentExists(string governmentId);
+        Task<bool> UpdateTestStudentAsync(
+            int studentId,
+            TestStudentDto studentDto,
+            CancellationToken cancellationToken = default
+        );
+        Task<List<TestEnrollmentDateGroupDto>> GetTestEnrollmentDateDataAsync(
+            CancellationToken cancellationToken = default
+        );
 
         #endregion
     }

@@ -7,12 +7,18 @@
         IQueryable<TEntity> Query();
 
         // === CRUD OPERATIONS ===
-        Task<TEntity?> GetByIdAsync(params object[] keyValues);
+        Task<TEntity?> GetByIdAsync(
+            object[] keyValues,
+            CancellationToken cancellationToken = default
+        );
 
-        Task<IEnumerable<TEntity>> GetAllAsync();
+        Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default);
 
-        Task AddAsync(TEntity entity);
-        Task AddRangeAsync(IEnumerable<TEntity> entities);
+        Task AddAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task AddRangeAsync(
+            IEnumerable<TEntity> entities,
+            CancellationToken cancellationToken = default
+        );
 
         void Update(TEntity entity);
         void UpdateRange(IEnumerable<TEntity> entities);

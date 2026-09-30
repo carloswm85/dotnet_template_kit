@@ -24,7 +24,7 @@ public class ContosoUniversityController : Controller
         _contosoService = contosoService;
     }
 
-    #region Students
+    #region TestStudents
 
     // GET: /ContosoUniversity/List
     [HttpGet("List")]
@@ -38,15 +38,16 @@ public class ContosoUniversityController : Controller
     {
         try
         {
-            var students = await _contosoService.GetStudentsPaginatedListAsync(
+            var students = await _contosoService.GetTestStudentsPaginatedListAsync(
                 currentFilter,
                 pageIndex,
                 pageSize,
                 searchString,
-                sortOrder
+                sortOrder,
+                HttpContext.RequestAborted
             );
 
-            var paginatedListViewModel = new PaginatedListViewModel<StudentDto>(
+            var paginatedListViewModel = new PaginatedListViewModel<TestStudentDto>(
                 paginatedList: students,
                 currentFilter: searchString,
                 currentSort: sortOrder,
@@ -75,7 +76,10 @@ public class ContosoUniversityController : Controller
         if (id == null)
             return NotFound();
 
-        var student = await _contosoService.GetStudentAsync(id.Value);
+        var student = await _contosoService.GetTestStudentAsync(
+            id.Value,
+            cancellationToken: HttpContext.RequestAborted
+        );
 
         if (student == null)
             return NotFound();
@@ -97,7 +101,7 @@ public class ContosoUniversityController : Controller
     // In this method: Use entity classes with model binding instead of view models.
     [HttpPost("Create")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([FromForm] StudentDto studentDto)
+    public async Task<IActionResult> Create([FromForm] TestStudentDto studentDto)
     {
         if (!ModelState.IsValid)
             return View(studentDto);
@@ -106,7 +110,10 @@ public class ContosoUniversityController : Controller
         {
             studentDto = await UploadImage(studentDto, "students");
 
-            await _contosoService.CreateStudentAsync(studentDto);
+            await _contosoService.CreateTestStudentAsync(
+                studentDto,
+                HttpContext.RequestAborted
+            );
             return RedirectToAction(nameof(Index));
         }
         catch (DbUpdateException ex)
@@ -129,7 +136,10 @@ public class ContosoUniversityController : Controller
         if (id == null)
             return NotFound();
 
-        var student = await _contosoService.GetStudentAsync(id.Value);
+        var student = await _contosoService.GetTestStudentAsync(
+            id.Value,
+            cancellationToken: HttpContext.RequestAborted
+        );
 
         if (student == null)
             return NotFound();
@@ -142,7 +152,7 @@ public class ContosoUniversityController : Controller
     // POST: /ContosoUniversity/Edit/5
     [HttpPost("Edit/{id:int}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int Id, [FromForm] StudentDto studentDto)
+    public async Task<IActionResult> Edit(int Id, [FromForm] TestStudentDto studentDto)
     {
         if (Id != studentDto.Id)
             return NotFound();
@@ -155,17 +165,21 @@ public class ContosoUniversityController : Controller
             if (studentDto.Image != null)
                 studentDto = await UploadImage(studentDto, "students");
 
-            await _contosoService.UpdateStudentAsync(Id, studentDto);
+            await _contosoService.UpdateTestStudentAsync(
+                Id,
+                studentDto,
+                HttpContext.RequestAborted
+            );
             return RedirectToAction(nameof(Index));
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            if (!_contosoService.StudentExists(studentDto.Id))
+            if (!_contosoService.TestStudentExists(studentDto.Id))
                 return NotFound();
 
             _logger.LogWarning(
                 ex,
-                "Concurrency conflict while updating student ID {StudentId}.",
+                "Concurrency conflict while updating student ID {TestStudentId}.",
                 studentDto.Id
             );
             ModelState.AddModelError(
@@ -178,7 +192,7 @@ public class ContosoUniversityController : Controller
         {
             _logger.LogError(
                 ex,
-                "An error occurred while editing the student with ID {StudentId}.",
+                "An error occurred while editing the student with ID {TestStudentId}.",
                 studentDto.Id
             );
             ModelState.AddModelError(
@@ -197,9 +211,10 @@ public class ContosoUniversityController : Controller
         if (id == null)
             return NotFound();
 
-        var student = await _contosoService.GetStudentAsync(
+        var student = await _contosoService.GetTestStudentAsync(
             studentId: id.Value,
-            asNoTracking: true
+            asNoTracking: true,
+            cancellationToken: HttpContext.RequestAborted
         );
 
         if (student == null)
@@ -220,21 +235,25 @@ public class ContosoUniversityController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var student = await _contosoService.GetStudentAsync(studentId: id, asNoTracking: true);
+        var student = await _contosoService.GetTestStudentAsync(
+            studentId: id,
+            asNoTracking: true,
+            cancellationToken: HttpContext.RequestAborted
+        );
 
         if (student == null)
             return RedirectToAction(nameof(Index));
 
         try
         {
-            await _contosoService.DeleteStudentAsync(id);
+            await _contosoService.DeleteTestStudentAsync(id, HttpContext.RequestAborted);
             return RedirectToAction(nameof(Index));
         }
         catch (DbUpdateException ex)
         {
             _logger.LogError(
                 ex,
-                "An error occurred while deleting the student with ID {StudentId}.",
+                "An error occurred while deleting the student with ID {TestStudentId}.",
                 id
             );
             return RedirectToAction(nameof(Delete), new { id = id, saveChangesError = true });
@@ -251,30 +270,36 @@ public class ContosoUniversityController : Controller
      */
 
     // THIS IS JUST AN EXAMPLE, unused
-    // PUT: /ContosoUniversity/Student/5
-    [HttpPut("Student/{id}")]
-    public async Task<IActionResult> UpdateStudent(int id, [FromBody] Student student)
+    // PUT: /ContosoUniversity/TestStudent/5
+    [HttpPut("TestStudent/{id}")]
+    public async Task<IActionResult> UpdateTestStudent(int id, [FromBody] TestStudent student)
     {
-        if (id != student.Id)
-            return BadRequest("Student ID mismatch.");
+        if (id != student.TestStudentId)
+            return BadRequest("TestStudent ID mismatch.");
 
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
         try
         {
-            var studentDto = await _contosoService.GetStudentAsync(id);
+            var studentDto = await _contosoService.GetTestStudentAsync(
+                id,
+                cancellationToken: HttpContext.RequestAborted
+            );
             if (studentDto == null)
                 return NotFound();
 
             // Replace all properties (full update)
             studentDto.FirstMidName = student.FirstMidName;
             studentDto.LastName = student.LastName;
-            studentDto.EnrollmentDate = student.EnrollmentDate;
+            studentDto.TestEnrollmentDate = student.TestEnrollmentDate;
 
             studentDto = await UploadImage(studentDto, "students");
 
-            await _contosoService.CreateStudentAsync(studentDto);
+            await _contosoService.CreateTestStudentAsync(
+                studentDto,
+                HttpContext.RequestAborted
+            );
             return NoContent(); // 204 - successful update
         }
         catch (DbUpdateException ex)
@@ -287,7 +312,9 @@ public class ContosoUniversityController : Controller
     [HttpGet("Statistics")]
     public async Task<IActionResult> About()
     {
-        var studentData = await _contosoService.GetEnrollmentDateDataAsync();
+        var studentData = await _contosoService.GetTestEnrollmentDateDataAsync(
+            HttpContext.RequestAborted
+        );
         return View(studentData);
     }
 
@@ -321,7 +348,7 @@ public class ContosoUniversityController : Controller
                 - General:
                     • From point (5) all required models were included (in the code base and the database)
                     • Review the model relationships, fix if necessary
-                    • Implement complete CRUD for all entities, only `Student` entity was completed
+                    • Implement complete CRUD for all entities, only `TestStudent` entity was completed
                     • Instructions on how to do that are on points (6) to (10) from tutorial
                 - What you can do and where (these are just general guidelines, not all steps to take):
                     A. Data Layer:
@@ -330,7 +357,7 @@ public class ContosoUniversityController : Controller
                         • Include missing repositories
                     C. Service Layer:
                         • Generate missing DTOs and mapping profiles
-                        • Add interfaces and services, you can use the StudentService as example
+                        • Add interfaces and services, you can use the TestStudentService as example
                     D. API Layer:
                         • Generate missing endpoints
                     E. MVC Layer:
@@ -371,7 +398,7 @@ public class ContosoUniversityController : Controller
 
             // Save file
             using var fileStream = new FileStream(filePath, FileMode.Create);
-            await imageContainer.Image.CopyToAsync(fileStream);
+            await imageContainer.Image.CopyToAsync(fileStream, HttpContext.RequestAborted);
 
             // ✅ Store ONLY relative path
             imageContainer.ImagePath = $"/images/{folderName}/{fileName}";
