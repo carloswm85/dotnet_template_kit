@@ -1,0 +1,84 @@
+@using CleanArchitectureTemplate.Web.Models.ViewModels.TestContact
+@model TestContactViewModel
+
+@{
+    ViewData["Title"] = "Edit TestContact";
+}
+
+<div class="card col-12 col-lg-9 mx-auto my-3">
+    <div class="card-header pb-3">
+        <h3 class="fw-normal my-3">@ViewData["Title"]</h3>
+        <p class="text-muted mb-0">Update contact information</p>
+    </div>
+
+    <div class="card-body">
+                <form method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <!-- HIDDEN_FIELDS -->
+                    <input type="hidden" asp-for="TestContactId" />
+
+                    <!-- NAME -->
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <!-- ADDRESS -->
+                    <div class="mb-3">
+                        <label asp-for="Address" class="form-label"></label>
+                        <input asp-for="Address" class="form-control" />
+                        <span asp-validation-for="Address" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+
+                        <!-- CITY -->
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="City" class="form-label"></label>
+                            <input asp-for="City" class="form-control" />
+                            <span asp-validation-for="City" class="text-danger"></span>
+                        </div>
+
+                        <!-- STATE -->
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="State" class="form-label"></label>
+                            <input asp-for="State" class="form-control" />
+                            <span asp-validation-for="State" class="text-danger"></span>
+                        </div>
+
+                        <!-- ZIP -->
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="Zip" class="form-label"></label>
+                            <input asp-for="Zip" class="form-control" />
+                            <span asp-validation-for="Zip" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- EMAIL -->
+                    <div class="mb-4">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <hr />
+
+                    <!-- BUTTONS -->
+                    <div class="d-flex flex-column flex-md-row gap-2 pt-2">
+                        <a asp-action="Index" class="btn btn-lg btn-outline-secondary flex-grow-1">
+                            <i class="bi bi-arrow-left me-2"></i>Back to list
+                        </a>
+
+                        <button type="submit" class="btn btn-lg btn-primary flex-grow-1">
+                            <i class="bi bi-save me-2"></i>Save changes
+                        </button>
+                    </div>
+                </form>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

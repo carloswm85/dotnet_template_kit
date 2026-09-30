@@ -1,15 +1,49 @@
-﻿using CleanArchitectureTemplate.Web;
 using FluentAssertions;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using CleanArchitectureTemplate.Web;
 using Xunit;
 
 namespace CleanArchitectureTemplate.Tests.Integration.Web;
 
-public class WebEndpointsAvailabilityTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class IntegrationWebApplicationFactory : WebApplicationFactory<Program>
+{
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.ConfigureAppConfiguration((_, configuration) =>
+        {
+            configuration.AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["ConnectionStrings:DefaultConnection"] =
+                        "Server=(localdb)\\MSSQLLocalDB;Database=CleanArchitectureTemplateIntegrationTests;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True;",
+                }
+            );
+        });
+        builder.ConfigureLogging(logging =>
+        {
+            logging.ClearProviders();
+            logging.AddConsole();
+        });
+        builder.ConfigureTestServices(services =>
+        {
+            services.RemoveAll<IDataProtectionProvider>();
+            services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider());
+        });
+    }
+}
+
+public class WebEndpointsAvailabilityTests : IClassFixture<IntegrationWebApplicationFactory>
 {
     private readonly HttpClient _client;
 
-    public WebEndpointsAvailabilityTests(WebApplicationFactory<Program> factory)
+    public WebEndpointsAvailabilityTests(IntegrationWebApplicationFactory factory)
     {
         _client = factory.CreateClient();
     }
@@ -22,7 +56,7 @@ public class WebEndpointsAvailabilityTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public async Task StudentsListPage_ReturnsSuccessStatusCode()
+    public async Task TestStudentsListPage_ReturnsSuccessStatusCode()
     {
         var response = await _client.GetAsync(
             "/ContosoUniversity/List",
@@ -34,7 +68,7 @@ public class WebEndpointsAvailabilityTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public async Task StudentsStatistics_ReturnsSuccessStatusCode()
+    public async Task TestStudentsStatistics_ReturnsSuccessStatusCode()
     {
         var response = await _client.GetAsync(
             "/ContosoUniversity/Statistics",
@@ -46,7 +80,7 @@ public class WebEndpointsAvailabilityTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public async Task NewStudentCreation_ReturnsSuccessStatusCode()
+    public async Task NewTestStudentCreation_ReturnsSuccessStatusCode()
     {
         var response = await _client.GetAsync(
             "/ContosoUniversity/Create",
@@ -58,7 +92,7 @@ public class WebEndpointsAvailabilityTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public async Task SelectedStudentDetails_ReturnsSuccessStatusCode()
+    public async Task SelectedTestStudentDetails_ReturnsSuccessStatusCode()
     {
         var response = await _client.GetAsync(
             "/ContosoUniversity/Details/40",
@@ -70,7 +104,7 @@ public class WebEndpointsAvailabilityTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public async Task SelectedStudentDelete_ReturnsSuccessStatusCode()
+    public async Task SelectedTestStudentDelete_ReturnsSuccessStatusCode()
     {
         var response = await _client.GetAsync(
             "/ContosoUniversity/Delete/1",
@@ -82,7 +116,7 @@ public class WebEndpointsAvailabilityTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public async Task SelectedStudentEdit_ReturnsSuccessStatusCode()
+    public async Task SelectedTestStudentEdit_ReturnsSuccessStatusCode()
     {
         var response = await _client.GetAsync(
             "/ContosoUniversity/Edit/40",

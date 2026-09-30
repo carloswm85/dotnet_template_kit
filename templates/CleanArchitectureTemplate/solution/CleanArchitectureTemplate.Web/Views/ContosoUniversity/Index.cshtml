@@ -1,25 +1,29 @@
-﻿@using CleanArchitectureTemplate.ApplicationCore.Dtos.ContosoUniversity
+@using CleanArchitectureTemplate.ApplicationCore.Dtos.ContosoUniversity
 @using CleanArchitectureTemplate.Web.Models
-@model PaginatedListViewModel<StudentDto>
+@model PaginatedListViewModel<TestStudentDto>
 
 @{
-    ViewData["Title"] = "Students Management";
+    ViewData["Title"] = "TestStudents Management";
 }
 
-<div class="container mt-5">
-
+<div class="card my-3">
     <!-- Header Row -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <h2 class="mb-0">@ViewData["Title"]</h2>
+    <div class="card-header pb-3">
+        <h3 class="fw-normal my-3">@ViewData["Title"]</h3>
 
-        <a asp-controller="ContosoUniversity" asp-action="create" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1"></i> Create New
-        </a>
+        <!-- BUTTONS -->
+        <div class="d-flex gap-2 col-12 col-md-12">
+            <a asp-controller="ContosoUniversity"
+               asp-action="create"
+               role="button"
+               class="btn btn-lg btn-primary flex-grow-1">
+                <i class="bi bi-plus-circle me-2"></i>Create New
+            </a>
+        </div>
     </div>
 
-    <hr />
-
-    <div class="d-flex justify-content-between">
+    <div class="card-body">
+        <div class="d-flex justify-content-between flex-wrap gap-3">
         <!-- Page Size Dropdown -->
         <div class="mb-4">
             <label for="PageSize" class="form-label fw-semibold">Page Size:</label>
@@ -59,7 +63,9 @@
         <form asp-action="Index" method="get" class="mb-4">
             <div class="row g-2 align-items-end">
                 <div class="col-auto">
+                    <!-- BUTTONS -->
                     <div class="input-group">
+                        <!-- HIDDEN_FIELDS -->
                         <input type="hidden" name="sortOrder" value="@Model.CurrentSort" />
                         <input type="hidden" name="pageIndex" value="1" /> <!-- reset to page 1 on search -->
                         <input type="hidden" name="pageSize" value="@Model.PageSize" />
@@ -86,12 +92,14 @@
                     </div>
                 </div>
 
+                <!-- BUTTONS -->
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-search me-1"></i> Search
                     </button>
                 </div>
 
+                <!-- BUTTONS -->
                 <div class="col-auto">
                     <a asp-action="Index" class="btn btn-secondary">
                         Reset Default
@@ -100,7 +108,7 @@
 
             </div>
         </form>
-    </div>
+        </div>
 
     <!-- No Data Warning -->
     @if (!Model.PaginatedList.Any())
@@ -112,11 +120,11 @@
     }
     else
     {
-        <!-- Table Card -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
+        <!-- RESULTS -->
+        <!-- BUTTONS -->
+        <div class="table-responsive mb-4">
+            <!-- RESULTS -->
+            <table class="table table-striped table-hover mb-0 align-middle">
 
                         <thead class="table-light">
                             <tr>
@@ -142,7 +150,7 @@
                                        asp-route-currentFilter="@Model.CurrentFilter"
                                        asp-route-searchString="@Model.CurrentFilter"
                                        asp-route-pageSize="@Model.PageSize">
-                                        @Html.DisplayNameFor(model => model.PaginatedList[0].EnrollmentDate)
+                                        @Html.DisplayNameFor(model => model.PaginatedList[0].TestEnrollmentDate)
                                     </a>
                                 </th>
 
@@ -161,10 +169,10 @@
                                 <tr>
                                     <td>@item.LastName</td>
                                     <td>@item.FirstMidName</td>
-                                    @if (item.EnrollmentDate != null)
+                                    @if (item.TestEnrollmentDate != null)
                                     {
                                         <td>
-                                            @item.EnrollmentDate.Value.ToString("d")
+                                            @item.TestEnrollmentDate.Value.ToString("d")
                                         </td>
                                     }
                                     else
@@ -195,14 +203,12 @@
                             }
                         </tbody>
 
-                    </table>
-                </div>
-            </div>
+            </table>
         </div>
 
 
         <div class="d-flex justify-content-between align-items-center mt-3">
-            <!-- Pagination -->
+            <!-- PAGINATION -->
             <nav>
                 <ul class="pagination mb-0">
 
@@ -275,4 +281,5 @@
         </div>
 
     }
+    </div>
 </div>

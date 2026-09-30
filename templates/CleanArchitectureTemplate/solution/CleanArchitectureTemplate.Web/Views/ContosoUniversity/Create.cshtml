@@ -1,19 +1,18 @@
-﻿@using CleanArchitectureTemplate.ApplicationCore.Dtos.ContosoUniversity
-@model StudentDto
+@using CleanArchitectureTemplate.ApplicationCore.Dtos.ContosoUniversity
+@model TestStudentDto
 
 @{
-    ViewData["Title"] = "Create Student";
+    ViewData["Title"] = "Create TestStudent";
 }
 
-<div class="container mt-5">
-    <div class="card shadow-sm rounded-3">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">
-                <i class="bi bi-person-plus-fill me-2"></i> Create Student
-            </h4>
-        </div>
+<div class="card col-12 col-lg-9 mx-auto my-3">
+    <div class="card-header pb-3">
+        <h3 class="fw-normal my-3">
+            <i class="bi bi-person-plus-fill me-2"></i>@ViewData["Title"]
+        </h3>
+    </div>
 
-        <div class="card-body">
+    <div class="card-body">
 
             <form asp-action="Create" method="post" enctype="multipart/form-data" novalidate>
 
@@ -23,12 +22,14 @@
                         src="@(string.IsNullOrEmpty(Model?.ImagePath)
                             ? Url.Content("~/images/defaults/default-person.png")
                             : Url.Content(Model.ImagePath))"
-                        alt="Student profile"
+                        alt="TestStudent profile"
                         class="img-thumbnail"
                         style="max-width: 150px;" />
                 </div>
 
                 <!-- Upload Image -->
+
+                <!-- IMAGE -->
                 <div class="mb-3">
                     <label asp-for="Image" class="form-label fw-semibold"></label>
                     <input asp-for="Image"
@@ -39,44 +40,50 @@
                     <span asp-validation-for="Image" class="text-danger"></span>
                 </div>
 
+                <!-- LAST_NAME -->
                 <div class="mb-3">
                     <label asp-for="LastName" class="form-label fw-semibold"></label>
                     <input asp-for="LastName" class="form-control" />
                     <span asp-validation-for="LastName" class="text-danger"></span>
                 </div>
 
+                <!-- FIRST_MID_NAME -->
                 <div class="mb-3">
                     <label asp-for="FirstMidName" class="form-label fw-semibold"></label>
                     <input asp-for="FirstMidName" class="form-control" />
                     <span asp-validation-for="FirstMidName" class="text-danger"></span>
                 </div>
 
+                <!-- GOVERNMENT_ID -->
                 <div class="mb-3">
                     <label asp-for="GovernmentId" class="form-label fw-semibold"></label> (only numbers)
                     <input asp-for="GovernmentId" class="form-control" />
                     <span asp-validation-for="GovernmentId" class="text-danger"></span>
                 </div>
 
+                <!-- ENROLLMENT_DATE -->
                 <div class="mb-3">
-                    <label asp-for="EnrollmentDate" class="form-label fw-semibold"></label>
-                    <input asp-for="EnrollmentDate" class="form-control" type="date" />
-                    <span asp-validation-for="EnrollmentDate" class="text-danger"></span>
+                    <label asp-for="TestEnrollmentDate" class="form-label fw-semibold"></label>
+                    <input asp-for="TestEnrollmentDate" class="form-control" type="date" />
+                    <span asp-validation-for="TestEnrollmentDate" class="text-danger"></span>
                 </div>
 
                 <hr />
 
-                <div class="d-flex justify-content-end">
-                    <a asp-controller="ContosoUniversity" asp-action="list" class="btn btn-secondary me-2">
-                        <i class="bi bi-arrow-left"></i> Back to List
+                <!-- BUTTONS -->
+                <div class="d-flex flex-column flex-md-row gap-2 pt-2">
+                    <a asp-controller="ContosoUniversity"
+                       asp-action="list"
+                       class="btn btn-lg btn-outline-secondary flex-grow-1">
+                        <i class="bi bi-arrow-left me-2"></i>Back to List
                     </a>
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle"></i> Create
+                    <button type="submit" class="btn btn-lg btn-primary flex-grow-1">
+                        <i class="bi bi-check-circle me-2"></i>Create
                     </button>
                 </div>
 
             </form>
 
-        </div>
     </div>
 </div>
 
@@ -94,7 +101,7 @@
                 preview.src = URL.createObjectURL(input.files[0]);
             }
         }
-        
+
         document.addEventListener("DOMContentLoaded", function () {
             const img = document.getElementById("previewImage");
 

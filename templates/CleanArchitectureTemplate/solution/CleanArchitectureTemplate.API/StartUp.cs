@@ -200,7 +200,7 @@ public class Startup
                     TermsOfService = new Uri("https://example.com/terms"),
                     Contact = new OpenApiContact
                     {
-                        Name = "Example Contact",
+                        Name = "Example TestContact",
                         Url = new Uri("https://example.com/contact"),
                     },
                     License = new OpenApiLicense

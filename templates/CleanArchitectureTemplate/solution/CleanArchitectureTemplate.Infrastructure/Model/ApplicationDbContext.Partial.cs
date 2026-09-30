@@ -1,4 +1,4 @@
-﻿using CleanArchitectureTemplate.ApplicationCore.Entities;
+using CleanArchitectureTemplate.ApplicationCore.Entities;
 using CleanArchitectureTemplate.ApplicationCore.Entities.ContosoUniversity;
 using CleanArchitectureTemplate.Infrastructure.Model.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -14,19 +14,19 @@ public partial class ApplicationDbContext
 {
     #region Contoso University Example
 
-    public DbSet<Course> Courses { get; set; }
-    public DbSet<Enrollment> Enrollments { get; set; }
-    public DbSet<Student> Students { get; set; }
-    public DbSet<Department> Departments { get; set; }
-    public DbSet<Instructor> Instructors { get; set; }
-    public DbSet<OfficeAssignment> OfficeAssignments { get; set; }
-    public DbSet<CourseAssignment> CourseAssignments { get; set; }
+    public DbSet<TestCourse> TestCourses { get; set; }
+    public DbSet<TestEnrollment> TestEnrollments { get; set; }
+    public DbSet<TestStudent> TestStudents { get; set; }
+    public DbSet<TestDepartment> TestDepartments { get; set; }
+    public DbSet<TestInstructor> TestInstructors { get; set; }
+    public DbSet<TestOfficeAssignment> TestOfficeAssignments { get; set; }
+    public DbSet<TestCourseAssignment> TestCourseAssignments { get; set; }
 
     #endregion
 
     #region Identity
 
-    public DbSet<Contact> Contact { get; set; }
+    public DbSet<TestContact> TestContact { get; set; }
 
     #endregion
 
@@ -46,22 +46,24 @@ public partial class ApplicationDbContext
 
         #region Identity
 
-        modelBuilder.Entity<Contact>().ToTable("Contact");
+        modelBuilder.Entity<TestContact>().ToTable("TestContact");
 
         #endregion
 
 
         #region Contoso University
 
-        modelBuilder.Entity<Course>().ToTable("Course");
-        modelBuilder.Entity<Enrollment>().ToTable("Enrollment");
-        modelBuilder.Entity<Student>().ToTable("Student");
-        modelBuilder.Entity<Department>().ToTable("Department");
-        modelBuilder.Entity<Instructor>().ToTable("Instructor");
-        modelBuilder.Entity<OfficeAssignment>().ToTable("OfficeAssignment");
-        modelBuilder.Entity<CourseAssignment>().ToTable("CourseAssignment");
+        modelBuilder.Entity<TestCourse>().ToTable("TestCourse");
+        modelBuilder.Entity<TestEnrollment>().ToTable("TestEnrollment");
+        modelBuilder.Entity<TestStudent>().ToTable("TestStudent");
+        modelBuilder.Entity<TestDepartment>().ToTable("TestDepartment");
+        modelBuilder.Entity<TestInstructor>().ToTable("TestInstructor");
+        modelBuilder.Entity<TestOfficeAssignment>().ToTable("TestOfficeAssignment");
+        modelBuilder.Entity<TestCourseAssignment>().ToTable("TestCourseAssignment");
 
-        modelBuilder.Entity<CourseAssignment>().HasKey(c => new { c.CourseId, c.InstructorId });
+        modelBuilder
+            .Entity<TestCourseAssignment>()
+            .HasKey(c => new { c.TestCourseId, c.TestInstructorId });
 
         #endregion
     }

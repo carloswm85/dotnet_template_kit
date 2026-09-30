@@ -1,11 +1,11 @@
-﻿using CleanArchitectureTemplate.ApplicationCore.Common.Pagination;
+using CleanArchitectureTemplate.ApplicationCore.Common.Pagination;
 using CleanArchitectureTemplate.ApplicationCore.Dtos.ContosoUniversity;
 
 namespace CleanArchitectureTemplate.ApplicationCore.Interfaces;
 
 public interface IPaginationService
 {
-    Task<PaginatedList<StudentDto>> GetStudentsPaginatedListAsync(
+    Task<PaginatedList<TestStudentDto>> GetTestStudentsPaginatedListAsync(
         string currentFilter,
         int pageIndex,
         int pageSize,

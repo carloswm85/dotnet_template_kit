@@ -1,20 +1,20 @@
-﻿using Xunit;
+using Xunit;
 
 namespace CleanArchitectureTemplate.Tests.Unit.Services;
 
 public class ContosoUniversityServiceUnitTests
 {
     [Fact]
-    public async Task GetStudentAsync_AsNoTracking_ReturnsMappedStudentDto()
+    public async Task GetTestStudentAsync_AsNoTracking_ReturnsMappedTestStudentDto()
     {
         // Arrange
         /*
-        var mockRepo = new Mock<IRepository<Student>>();
+        var mockRepo = new Mock<IRepository<TestStudent>>();
         var mockUow = new Mock<IUnitOfWork>();
         var mockMapper = new Mock<IMapper>();
         var mockLogger = new Mock<ILogger<ContosoUniversityService>>();
 
-        var student = new Student
+        var student = new TestStudent
         {
             Id = 1,
             GovernmentId = "12345678",
@@ -23,10 +23,10 @@ public class ContosoUniversityServiceUnitTests
         };
 
         mockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(student);
-        mockUow.Setup(u => u.StudentRepository).Returns(mockRepo.Object);
+        mockUow.Setup(u => u.TestStudentRepository).Returns(mockRepo.Object);
 
-        var expectedDto = new StudentDto { Id = 1, GovernmentId = "12345678", LastName = "Doe", FirstMidName = "John" };
-        mockMapper.Setup(m => m.Map<StudentDto>(It.IsAny<Student>())).Returns((Student s) => new StudentDto
+        var expectedDto = new TestStudentDto { Id = 1, GovernmentId = "12345678", LastName = "Doe", FirstMidName = "John" };
+        mockMapper.Setup(m => m.Map<TestStudentDto>(It.IsAny<TestStudent>())).Returns((TestStudent s) => new TestStudentDto
         {
             Id = s.Id,
             GovernmentId = s.GovernmentId,
@@ -37,7 +37,7 @@ public class ContosoUniversityServiceUnitTests
         var service = new ContosoUniversityService(mockLogger.Object, mockUow.Object, mockMapper.Object);
 
         // Act
-        var result = await service.GetStudentAsync(1, asNoTracking: true);
+        var result = await service.GetTestStudentAsync(1, asNoTracking: true);
 
         // Assert
         Assert.NotNull(result);
@@ -48,36 +48,36 @@ public class ContosoUniversityServiceUnitTests
     }
 
     [Fact]
-    public async Task CreateStudentAsync_AddsStudentAndReturnsId()
+    public async Task CreateTestStudentAsync_AddsTestStudentAndReturnsId()
     {
         // Arrange
         /*
-        var mockRepo = new Mock<IRepository<Student>>();
+        var mockRepo = new Mock<IRepository<TestStudent>>();
         var mockUow = new Mock<IUnitOfWork>();
         var mockMapper = new Mock<IMapper>();
         var mockLogger = new Mock<ILogger<ContosoUniversityService>>();
 
-        var dto = new StudentDto { GovernmentId = "ABC-12-3456", LastName = "Smith", FirstMidName = "Anna" };
-        var mappedStudent = new Student { GovernmentId = "ABC-12-3456", LastName = "Smith", FirstMidName = "Anna" };
+        var dto = new TestStudentDto { GovernmentId = "ABC-12-3456", LastName = "Smith", FirstMidName = "Anna" };
+        var mappedTestStudent = new TestStudent { GovernmentId = "ABC-12-3456", LastName = "Smith", FirstMidName = "Anna" };
 
-        mockMapper.Setup(m => m.Map<Student>(It.IsAny<StudentDto>())).Returns(mappedStudent);
+        mockMapper.Setup(m => m.Map<TestStudent>(It.IsAny<TestStudentDto>())).Returns(mappedTestStudent);
 
         // When AddAsync is called, set the Id to simulate DB behaviour
-        mockRepo.Setup(r => r.AddAsync(It.IsAny<Student>()))
+        mockRepo.Setup(r => r.AddAsync(It.IsAny<TestStudent>()))
             .Returns(Task.CompletedTask)
-            .Callback<Student>(s => s.Id = 42);
+            .Callback<TestStudent>(s => s.Id = 42);
 
-        mockUow.Setup(u => u.StudentRepository).Returns(mockRepo.Object);
+        mockUow.Setup(u => u.TestStudentRepository).Returns(mockRepo.Object);
         mockUow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var service = new ContosoUniversityService(mockLogger.Object, mockUow.Object, mockMapper.Object);
 
         // Act
-        var createdId = await service.CreateStudentAsync(dto);
+        var createdId = await service.CreateTestStudentAsync(dto);
 
         // Assert
         Assert.Equal(42, createdId);
-        mockRepo.Verify(r => r.AddAsync(It.IsAny<Student>()), Times.Once);
+        mockRepo.Verify(r => r.AddAsync(It.IsAny<TestStudent>()), Times.Once);
         mockUow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         */
     }

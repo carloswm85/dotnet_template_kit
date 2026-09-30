@@ -1,9 +1,9 @@
-﻿using CleanArchitectureTemplate.ApplicationCore.Common.Pagination;
+using MapsterMapper;
+using Microsoft.Extensions.Logging;
+using CleanArchitectureTemplate.ApplicationCore.Common.Pagination;
 using CleanArchitectureTemplate.ApplicationCore.Dtos.ContosoUniversity;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces;
 using CleanArchitectureTemplate.Infrastructure.Model;
-using MapsterMapper;
-using Microsoft.Extensions.Logging;
 
 namespace CleanArchitectureTemplate.Infrastructure.Services;
 
@@ -24,7 +24,7 @@ public class PaginationService : IPaginationService
         _context = context;
     }
 
-    public async Task<PaginatedList<StudentDto>> GetStudentsPaginatedListAsync(
+    public async Task<PaginatedList<TestStudentDto>> GetTestStudentsPaginatedListAsync(
         string currentFilter,
         int pageIndex,
         int pageSize,
@@ -32,7 +32,7 @@ public class PaginationService : IPaginationService
         string sortOrder
     )
     {
-        var students = _context.Students.AsQueryable();
+        var students = _context.TestStudents.AsQueryable();
         var totalRecords = students.Count();
 
         // PAGING
@@ -59,10 +59,10 @@ public class PaginationService : IPaginationService
                 students = students.OrderByDescending(s => s.LastName);
                 break;
             case CurrentSort.DateAsc:
-                students = students.OrderBy(s => s.EnrollmentDate);
+                students = students.OrderBy(s => s.TestEnrollmentDate);
                 break;
             case CurrentSort.DateDesc:
-                students = students.OrderByDescending(s => s.EnrollmentDate);
+                students = students.OrderByDescending(s => s.TestEnrollmentDate);
                 break;
             default:
                 students = students.OrderBy(s => s.LastName);
@@ -72,9 +72,9 @@ public class PaginationService : IPaginationService
         var count = students.Count();
         var items = students.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToList();
 
-        var studentsDto = _mapper.Map<List<StudentDto>>(items);
+        var studentsDto = _mapper.Map<List<TestStudentDto>>(items);
 
-        return new PaginatedList<StudentDto>(
+        return new PaginatedList<TestStudentDto>(
             items: studentsDto,
             count: count,
             pageIndex: pageIndex,

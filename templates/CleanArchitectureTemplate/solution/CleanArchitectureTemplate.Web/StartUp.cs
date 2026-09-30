@@ -3,7 +3,7 @@ using CleanArchitectureTemplate.ApplicationCore.Interfaces;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces.ContosoUniversity;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces.Identity;
 using CleanArchitectureTemplate.ApplicationCore.Mappings;
-using CleanArchitectureTemplate.Infrastructure.Authorization.ContactAuthorization;
+using CleanArchitectureTemplate.Infrastructure.Authorization.TestContactAuthorization;
 using CleanArchitectureTemplate.Infrastructure.Data;
 using CleanArchitectureTemplate.Infrastructure.Interfaces.IdentityInterfaces;
 using CleanArchitectureTemplate.Infrastructure.Model;
@@ -26,20 +26,9 @@ namespace CleanArchitectureTemplate.Web;
 
 public class StartUp
 {
-    public StartUp(IWebHostEnvironment env)
+    public StartUp(IConfiguration configuration)
     {
-        var builder = new ConfigurationBuilder()
-            .SetBasePath(env.ContentRootPath)
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-            .AddEnvironmentVariables();
-
-        if (env.IsDevelopment())
-        {
-            builder.AddUserSecrets<StartUp>();
-        }
-
-        Configuration = builder.Build();
+        Configuration = configuration;
     }
 
     public IConfiguration Configuration { get; set; }
@@ -110,9 +99,9 @@ public class StartUp
         services.AddScoped<IMapper, ServiceMapper>();
 
         // === AUTHORIZATION HANDLERS ===
-        services.AddScoped<IAuthorizationHandler, ContactIsOwnerAuthorizationHandler>();
-        services.AddSingleton<IAuthorizationHandler, ContactAdministratorsAuthorizationHandler>();
-        services.AddSingleton<IAuthorizationHandler, ContactManagerAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, TestContactIsOwnerAuthorizationHandler>();
+        services.AddSingleton<IAuthorizationHandler, TestContactAdministratorsAuthorizationHandler>();
+        services.AddSingleton<IAuthorizationHandler, TestContactManagerAuthorizationHandler>();
 
         // === HTTP CLIENT ===
         // Configure HttpClient with base address from configuration

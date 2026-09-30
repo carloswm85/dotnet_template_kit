@@ -1,4 +1,4 @@
-﻿using CleanArchitectureTemplate.ApplicationCore.Constants;
+using CleanArchitectureTemplate.ApplicationCore.Constants;
 using CleanArchitectureTemplate.ApplicationCore.Entities;
 using CleanArchitectureTemplate.ApplicationCore.Entities.ContosoUniversity;
 using CleanArchitectureTemplate.Infrastructure.Model;
@@ -21,7 +21,7 @@ public static class DbInitializer
         await dbContext.Database.MigrateAsync();
 
         // #2 — Check AFTER migration so the table exists
-        if (dbContext.Students.Any())
+        if (dbContext.TestStudents.Any())
         {
             return; // DB has already been seeded
         }
@@ -79,51 +79,51 @@ public static class DbInitializer
     )
     {
         // === CONTOSO UNIVERSITY SEEDING FOR CRUD EXAMPLE
-        IEnumerable<Student> students = GetStudents();
-        dbContext.Students.AddRange(students);
+        IEnumerable<TestStudent> students = GetTestStudents();
+        dbContext.TestStudents.AddRange(students);
         dbContext.SaveChanges();
 
-        IEnumerable<Instructor> instructors = GetInstructors();
-        dbContext.Instructors.AddRange(instructors);
+        IEnumerable<TestInstructor> instructors = GetTestInstructors();
+        dbContext.TestInstructors.AddRange(instructors);
         dbContext.SaveChanges();
 
-        IEnumerable<Department> departments = GetDepartments();
-        dbContext.Departments.AddRange(departments);
+        IEnumerable<TestDepartment> departments = GetTestDepartments();
+        dbContext.TestDepartments.AddRange(departments);
         dbContext.SaveChanges();
 
-        IEnumerable<Course> courses = GetCourses(departments);
-        dbContext.Courses.AddRange(courses);
+        IEnumerable<TestCourse> courses = GetTestCourses(departments);
+        dbContext.TestCourses.AddRange(courses);
         dbContext.SaveChanges();
 
-        IEnumerable<OfficeAssignment> officeAssignments = GetOfficeAssignments(instructors);
-        dbContext.OfficeAssignments.AddRange(officeAssignments);
+        IEnumerable<TestOfficeAssignment> officeAssignments = GetTestOfficeAssignments(instructors);
+        dbContext.TestOfficeAssignments.AddRange(officeAssignments);
         dbContext.SaveChanges();
 
-        IEnumerable<CourseAssignment> courseInstructors = GetCourseAssignments(
+        IEnumerable<TestCourseAssignment> courseTestInstructors = GetTestCourseAssignments(
             instructors,
             courses
         );
-        dbContext.CourseAssignments.AddRange(courseInstructors);
+        dbContext.TestCourseAssignments.AddRange(courseTestInstructors);
         dbContext.SaveChanges();
 
-        IEnumerable<Enrollment> enrollments = GetEnrollments(students, courses);
-        foreach (Enrollment e in enrollments)
+        IEnumerable<TestEnrollment> enrollments = GetTestEnrollments(students, courses);
+        foreach (TestEnrollment e in enrollments)
         {
             var enrollmentInDataBase = dbContext
-                .Enrollments.Where(s =>
-                    s.Student.StudentId == e.StudentId && s.Course.CourseId == e.CourseId
+                .TestEnrollments.Where(s =>
+                    s.TestStudent.TestStudentId == e.TestStudentId && s.TestCourse.TestCourseId == e.TestCourseId
                 )
                 .SingleOrDefault();
             if (enrollmentInDataBase == null)
             {
-                dbContext.Enrollments.Add(e);
+                dbContext.TestEnrollments.Add(e);
             }
         }
         dbContext.SaveChanges();
 
         // === SEED IDENTITY CONTACT EXAMPLE FOR AUTHORIZATION EXAMPLE
-        IEnumerable<Contact> contacts = GetContacts(userID, managerID, adminID);
-        dbContext.Contact.AddRange(contacts);
+        IEnumerable<TestContact> contacts = GetTestContacts(userID, managerID, adminID);
+        dbContext.TestContact.AddRange(contacts);
         dbContext.SaveChanges();
     }
 
@@ -215,151 +215,151 @@ public static class DbInitializer
         return user.Id;
     }
 
-    private static IEnumerable<CourseAssignment> GetCourseAssignments(
-        IEnumerable<Instructor> instructors,
-        IEnumerable<Course> courses
+    private static IEnumerable<TestCourseAssignment> GetTestCourseAssignments(
+        IEnumerable<TestInstructor> instructors,
+        IEnumerable<TestCourse> courses
     )
     {
         return
         [
-            new CourseAssignment
+            new TestCourseAssignment
             {
-                CourseId = courses.Single(c => c.Title == "Chemistry").CourseId,
-                InstructorId = instructors.Single(i => i.LastName == "Kapoor").InstructorId,
+                TestCourseId = courses.Single(c => c.Title == "Chemistry").TestCourseId,
+                TestInstructorId = instructors.Single(i => i.LastName == "Kapoor").TestInstructorId,
             },
-            new CourseAssignment
+            new TestCourseAssignment
             {
-                CourseId = courses.Single(c => c.Title == "Chemistry").CourseId,
-                InstructorId = instructors.Single(i => i.LastName == "Harui").InstructorId,
+                TestCourseId = courses.Single(c => c.Title == "Chemistry").TestCourseId,
+                TestInstructorId = instructors.Single(i => i.LastName == "Harui").TestInstructorId,
             },
-            new CourseAssignment
+            new TestCourseAssignment
             {
-                CourseId = courses.Single(c => c.Title == "Microeconomics").CourseId,
-                InstructorId = instructors.Single(i => i.LastName == "Zheng").InstructorId,
+                TestCourseId = courses.Single(c => c.Title == "Microeconomics").TestCourseId,
+                TestInstructorId = instructors.Single(i => i.LastName == "Zheng").TestInstructorId,
             },
-            new CourseAssignment
+            new TestCourseAssignment
             {
-                CourseId = courses.Single(c => c.Title == "Macroeconomics").CourseId,
-                InstructorId = instructors.Single(i => i.LastName == "Zheng").InstructorId,
+                TestCourseId = courses.Single(c => c.Title == "Macroeconomics").TestCourseId,
+                TestInstructorId = instructors.Single(i => i.LastName == "Zheng").TestInstructorId,
             },
-            new CourseAssignment
+            new TestCourseAssignment
             {
-                CourseId = courses.Single(c => c.Title == "Calculus").CourseId,
-                InstructorId = instructors.Single(i => i.LastName == "Fakhouri").InstructorId,
+                TestCourseId = courses.Single(c => c.Title == "Calculus").TestCourseId,
+                TestInstructorId = instructors.Single(i => i.LastName == "Fakhouri").TestInstructorId,
             },
-            new CourseAssignment
+            new TestCourseAssignment
             {
-                CourseId = courses.Single(c => c.Title == "Trigonometry").CourseId,
-                InstructorId = instructors.Single(i => i.LastName == "Harui").InstructorId,
+                TestCourseId = courses.Single(c => c.Title == "Trigonometry").TestCourseId,
+                TestInstructorId = instructors.Single(i => i.LastName == "Harui").TestInstructorId,
             },
-            new CourseAssignment
+            new TestCourseAssignment
             {
-                CourseId = courses.Single(c => c.Title == "Composition").CourseId,
-                InstructorId = instructors.Single(i => i.LastName == "Abercrombie").InstructorId,
+                TestCourseId = courses.Single(c => c.Title == "Composition").TestCourseId,
+                TestInstructorId = instructors.Single(i => i.LastName == "Abercrombie").TestInstructorId,
             },
-            new CourseAssignment
+            new TestCourseAssignment
             {
-                CourseId = courses.Single(c => c.Title == "Literature").CourseId,
-                InstructorId = instructors.Single(i => i.LastName == "Abercrombie").InstructorId,
+                TestCourseId = courses.Single(c => c.Title == "Literature").TestCourseId,
+                TestInstructorId = instructors.Single(i => i.LastName == "Abercrombie").TestInstructorId,
             },
         ];
     }
 
-    private static IEnumerable<OfficeAssignment> GetOfficeAssignments(
-        IEnumerable<Instructor> instructors
+    private static IEnumerable<TestOfficeAssignment> GetTestOfficeAssignments(
+        IEnumerable<TestInstructor> instructors
     )
     {
         return
         [
-            new OfficeAssignment
+            new TestOfficeAssignment
             {
-                InstructorId = instructors.Single(i => i.LastName == "Fakhouri").InstructorId,
+                TestInstructorId = instructors.Single(i => i.LastName == "Fakhouri").TestInstructorId,
                 Location = "Smith 17",
             },
-            new OfficeAssignment
+            new TestOfficeAssignment
             {
-                InstructorId = instructors.Single(i => i.LastName == "Harui").InstructorId,
+                TestInstructorId = instructors.Single(i => i.LastName == "Harui").TestInstructorId,
                 Location = "Gowan 27",
             },
-            new OfficeAssignment
+            new TestOfficeAssignment
             {
-                InstructorId = instructors.Single(i => i.LastName == "Kapoor").InstructorId,
+                TestInstructorId = instructors.Single(i => i.LastName == "Kapoor").TestInstructorId,
                 Location = "Thompson 304",
             },
         ];
     }
 
-    private static IEnumerable<Department> GetDepartments()
+    private static IEnumerable<TestDepartment> GetTestDepartments()
     {
         return
         [
-            new Department
+            new TestDepartment
             {
                 Name = "Computer Science",
                 Budget = 350000,
                 StartDate = DateTime.Parse("2007-09-01"),
-                InstructorId = 1,
+                TestInstructorId = 1,
             },
-            new Department
+            new TestDepartment
             {
                 Name = "Mathematics",
                 Budget = 100000,
                 StartDate = DateTime.Parse("2007-09-01"),
-                InstructorId = 2,
+                TestInstructorId = 2,
             },
-            new Department
+            new TestDepartment
             {
                 Name = "English",
                 Budget = 200000,
                 StartDate = DateTime.Parse("2007-09-01"),
-                InstructorId = 3,
+                TestInstructorId = 3,
             },
-            new Department
+            new TestDepartment
             {
                 Name = "Engineering",
                 Budget = 300000,
                 StartDate = DateTime.Parse("2007-09-01"),
-                InstructorId = 4,
+                TestInstructorId = 4,
             },
-            new Department
+            new TestDepartment
             {
                 Name = "Economics",
                 Budget = 250000,
                 StartDate = DateTime.Parse("2007-09-01"),
-                InstructorId = 5,
+                TestInstructorId = 5,
             },
         ];
     }
 
-    private static IEnumerable<Instructor> GetInstructors()
+    private static IEnumerable<TestInstructor> GetTestInstructors()
     {
         return
         [
-            new Instructor
+            new TestInstructor
             {
                 FirstMidName = "Kim",
                 LastName = "Abercrombie",
                 HireDate = DateTime.Parse("1995-03-11"),
             },
-            new Instructor
+            new TestInstructor
             {
                 FirstMidName = "Fadi",
                 LastName = "Fakhouri",
                 HireDate = DateTime.Parse("2002-07-06"),
             },
-            new Instructor
+            new TestInstructor
             {
                 FirstMidName = "Roger",
                 LastName = "Harui",
                 HireDate = DateTime.Parse("1998-07-01"),
             },
-            new Instructor
+            new TestInstructor
             {
                 FirstMidName = "Candace",
                 LastName = "Kapoor",
                 HireDate = DateTime.Parse("2001-01-15"),
             },
-            new Instructor
+            new TestInstructor
             {
                 FirstMidName = "Roger",
                 LastName = "Zheng",
@@ -368,829 +368,829 @@ public static class DbInitializer
         ];
     }
 
-    private static IEnumerable<Enrollment> GetEnrollments(
-        IEnumerable<Student> students,
-        IEnumerable<Course> courses
+    private static IEnumerable<TestEnrollment> GetTestEnrollments(
+        IEnumerable<TestStudent> students,
+        IEnumerable<TestCourse> courses
     )
     {
         return
         [
-            new Enrollment
+            new TestEnrollment
             {
-                StudentId = students.Single(s => s.LastName == "Alexander").StudentId,
-                CourseId = courses.Single(c => c.Title == "Chemistry").CourseId,
+                TestStudentId = students.Single(s => s.LastName == "Alexander").TestStudentId,
+                TestCourseId = courses.Single(c => c.Title == "Chemistry").TestCourseId,
                 Grade = Grade.A,
             },
-            new Enrollment
+            new TestEnrollment
             {
-                StudentId = students.Single(s => s.LastName == "Alexander").StudentId,
-                CourseId = courses.Single(c => c.Title == "Microeconomics").CourseId,
+                TestStudentId = students.Single(s => s.LastName == "Alexander").TestStudentId,
+                TestCourseId = courses.Single(c => c.Title == "Microeconomics").TestCourseId,
                 Grade = Grade.C,
             },
-            new Enrollment
+            new TestEnrollment
             {
-                StudentId = students.Single(s => s.LastName == "Alexander").StudentId,
-                CourseId = courses.Single(c => c.Title == "Macroeconomics").CourseId,
+                TestStudentId = students.Single(s => s.LastName == "Alexander").TestStudentId,
+                TestCourseId = courses.Single(c => c.Title == "Macroeconomics").TestCourseId,
                 Grade = Grade.B,
             },
-            new Enrollment
+            new TestEnrollment
             {
-                StudentId = students.Single(s => s.LastName == "Alonso").StudentId,
-                CourseId = courses.Single(c => c.Title == "Calculus").CourseId,
+                TestStudentId = students.Single(s => s.LastName == "Alonso").TestStudentId,
+                TestCourseId = courses.Single(c => c.Title == "Calculus").TestCourseId,
                 Grade = Grade.B,
             },
-            new Enrollment
+            new TestEnrollment
             {
-                StudentId = students.Single(s => s.LastName == "Alonso").StudentId,
-                CourseId = courses.Single(c => c.Title == "Trigonometry").CourseId,
+                TestStudentId = students.Single(s => s.LastName == "Alonso").TestStudentId,
+                TestCourseId = courses.Single(c => c.Title == "Trigonometry").TestCourseId,
                 Grade = Grade.B,
             },
-            new Enrollment
+            new TestEnrollment
             {
-                StudentId = students.Single(s => s.LastName == "Alonso").StudentId,
-                CourseId = courses.Single(c => c.Title == "Composition").CourseId,
+                TestStudentId = students.Single(s => s.LastName == "Alonso").TestStudentId,
+                TestCourseId = courses.Single(c => c.Title == "Composition").TestCourseId,
                 Grade = Grade.B,
             },
-            new Enrollment
+            new TestEnrollment
             {
-                StudentId = students.Single(s => s.LastName == "Anand").StudentId,
-                CourseId = courses.Single(c => c.Title == "Chemistry").CourseId,
+                TestStudentId = students.Single(s => s.LastName == "Anand").TestStudentId,
+                TestCourseId = courses.Single(c => c.Title == "Chemistry").TestCourseId,
             },
-            new Enrollment
+            new TestEnrollment
             {
-                StudentId = students.Single(s => s.LastName == "Anand").StudentId,
-                CourseId = courses.Single(c => c.Title == "Microeconomics").CourseId,
+                TestStudentId = students.Single(s => s.LastName == "Anand").TestStudentId,
+                TestCourseId = courses.Single(c => c.Title == "Microeconomics").TestCourseId,
                 Grade = Grade.B,
             },
-            new Enrollment
+            new TestEnrollment
             {
-                StudentId = students.Single(s => s.LastName == "Barzdukas").StudentId,
-                CourseId = courses.Single(c => c.Title == "Chemistry").CourseId,
+                TestStudentId = students.Single(s => s.LastName == "Barzdukas").TestStudentId,
+                TestCourseId = courses.Single(c => c.Title == "Chemistry").TestCourseId,
                 Grade = Grade.B,
             },
-            new Enrollment
+            new TestEnrollment
             {
-                StudentId = students.Single(s => s.LastName == "Li").StudentId,
-                CourseId = courses.Single(c => c.Title == "Composition").CourseId,
+                TestStudentId = students.Single(s => s.LastName == "Li").TestStudentId,
+                TestCourseId = courses.Single(c => c.Title == "Composition").TestCourseId,
                 Grade = Grade.B,
             },
-            new Enrollment
+            new TestEnrollment
             {
-                StudentId = students.Single(s => s.LastName == "Justice").StudentId,
-                CourseId = courses.Single(c => c.Title == "Literature").CourseId,
+                TestStudentId = students.Single(s => s.LastName == "Justice").TestStudentId,
+                TestCourseId = courses.Single(c => c.Title == "Literature").TestCourseId,
                 Grade = Grade.B,
             },
         ];
     }
 
-    private static IEnumerable<Course> GetCourses(IEnumerable<Department> departments)
+    private static IEnumerable<TestCourse> GetTestCourses(IEnumerable<TestDepartment> departments)
     {
         return
         [
-            new Course
+            new TestCourse
             {
-                CourseId = 1050,
+                TestCourseId = 1050,
                 Title = "Chemistry",
                 Credits = 3,
-                DepartmentId = departments.Single(s => s.Name == "Engineering").DepartmentId,
+                TestDepartmentId = departments.Single(s => s.Name == "Engineering").TestDepartmentId,
             },
-            new Course
+            new TestCourse
             {
-                CourseId = 4022,
+                TestCourseId = 4022,
                 Title = "Microeconomics",
                 Credits = 3,
-                DepartmentId = departments.Single(s => s.Name == "Economics").DepartmentId,
+                TestDepartmentId = departments.Single(s => s.Name == "Economics").TestDepartmentId,
             },
-            new Course
+            new TestCourse
             {
-                CourseId = 4041,
+                TestCourseId = 4041,
                 Title = "Macroeconomics",
                 Credits = 3,
-                DepartmentId = departments.Single(s => s.Name == "Economics").DepartmentId,
+                TestDepartmentId = departments.Single(s => s.Name == "Economics").TestDepartmentId,
             },
-            new Course
+            new TestCourse
             {
-                CourseId = 1045,
+                TestCourseId = 1045,
                 Title = "Calculus",
                 Credits = 4,
-                DepartmentId = departments.Single(s => s.Name == "Mathematics").DepartmentId,
+                TestDepartmentId = departments.Single(s => s.Name == "Mathematics").TestDepartmentId,
             },
-            new Course
+            new TestCourse
             {
-                CourseId = 3141,
+                TestCourseId = 3141,
                 Title = "Trigonometry",
                 Credits = 4,
-                DepartmentId = departments.Single(s => s.Name == "Mathematics").DepartmentId,
+                TestDepartmentId = departments.Single(s => s.Name == "Mathematics").TestDepartmentId,
             },
-            new Course
+            new TestCourse
             {
-                CourseId = 2021,
+                TestCourseId = 2021,
                 Title = "Composition",
                 Credits = 3,
-                DepartmentId = departments.Single(s => s.Name == "English").DepartmentId,
+                TestDepartmentId = departments.Single(s => s.Name == "English").TestDepartmentId,
             },
-            new Course
+            new TestCourse
             {
-                CourseId = 2042,
+                TestCourseId = 2042,
                 Title = "Literature",
                 Credits = 4,
-                DepartmentId = departments.Single(s => s.Name == "English").DepartmentId,
+                TestDepartmentId = departments.Single(s => s.Name == "English").TestDepartmentId,
             },
         ];
     }
 
-    private static IEnumerable<Student> GetStudents()
+    private static IEnumerable<TestStudent> GetTestStudents()
     {
         return
         [
-            new Student
+            new TestStudent
             {
                 GovernmentId = "45892341",
                 FirstMidName = "Carson",
                 LastName = "Alexander",
-                EnrollmentDate = DateOnly.Parse("1999-09-01"),
+                TestEnrollmentDate = DateOnly.Parse("1999-09-01"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "52173456",
                 FirstMidName = "Meredith",
                 LastName = "Alonso",
-                EnrollmentDate = DateOnly.Parse("2021-09-01"),
+                TestEnrollmentDate = DateOnly.Parse("2021-09-01"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "48765234",
                 FirstMidName = "Arturo",
                 LastName = "Anand",
-                EnrollmentDate = DateOnly.Parse("2003-09-01"),
+                TestEnrollmentDate = DateOnly.Parse("2003-09-01"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "41234567",
                 FirstMidName = "Gytis",
                 LastName = "Barzdukas",
-                EnrollmentDate = DateOnly.Parse("1999-09-01"),
+                TestEnrollmentDate = DateOnly.Parse("1999-09-01"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "59876543",
                 FirstMidName = "Yan",
                 LastName = "Li",
-                EnrollmentDate = DateOnly.Parse("2002-09-01"),
+                TestEnrollmentDate = DateOnly.Parse("2002-09-01"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "43567890",
                 FirstMidName = "Peggy",
                 LastName = "Justice",
-                EnrollmentDate = DateOnly.Parse("2001-09-01"),
+                TestEnrollmentDate = DateOnly.Parse("2001-09-01"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "56789012",
                 FirstMidName = "Laura",
                 LastName = "Norman",
-                EnrollmentDate = DateOnly.Parse("2003-09-01"),
+                TestEnrollmentDate = DateOnly.Parse("2003-09-01"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "47890123",
                 FirstMidName = "Nino",
                 LastName = "Olivetto",
-                EnrollmentDate = DateOnly.Parse("2010-09-01"),
+                TestEnrollmentDate = DateOnly.Parse("2010-09-01"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "51234568",
                 FirstMidName = "Brandon",
                 LastName = "Mitchell",
-                EnrollmentDate = DateOnly.Parse("1995-03-15"),
+                TestEnrollmentDate = DateOnly.Parse("1995-03-15"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "44567891",
                 FirstMidName = "Emily",
                 LastName = "Johnson",
-                EnrollmentDate = DateOnly.Parse("2018-01-22"),
+                TestEnrollmentDate = DateOnly.Parse("2018-01-22"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "58901234",
                 FirstMidName = "Michael",
                 LastName = "Davis",
-                EnrollmentDate = DateOnly.Parse("2007-06-10"),
+                TestEnrollmentDate = DateOnly.Parse("2007-06-10"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "42345679",
                 FirstMidName = "Sarah",
                 LastName = "Wilson",
-                EnrollmentDate = DateOnly.Parse("2012-11-03"),
+                TestEnrollmentDate = DateOnly.Parse("2012-11-03"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "55678902",
                 FirstMidName = "Joshua",
                 LastName = "Martinez",
-                EnrollmentDate = DateOnly.Parse("1998-08-17"),
+                TestEnrollmentDate = DateOnly.Parse("1998-08-17"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "49012345",
                 FirstMidName = "Ashley",
                 LastName = "Anderson",
-                EnrollmentDate = DateOnly.Parse("2015-04-29"),
+                TestEnrollmentDate = DateOnly.Parse("2015-04-29"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "53456780",
                 FirstMidName = "Christop",
                 LastName = "Taylor",
-                EnrollmentDate = DateOnly.Parse("2001-12-08"),
+                TestEnrollmentDate = DateOnly.Parse("2001-12-08"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "46789013",
                 FirstMidName = "Jessica",
                 LastName = "Thomas",
-                EnrollmentDate = DateOnly.Parse("2019-07-14"),
+                TestEnrollmentDate = DateOnly.Parse("2019-07-14"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "40123456",
                 FirstMidName = "Matthew",
                 LastName = "Jackson",
-                EnrollmentDate = DateOnly.Parse("2005-02-21"),
+                TestEnrollmentDate = DateOnly.Parse("2005-02-21"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "54567892",
                 FirstMidName = "Amanda",
                 LastName = "White",
-                EnrollmentDate = DateOnly.Parse("2013-10-06"),
+                TestEnrollmentDate = DateOnly.Parse("2013-10-06"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "47890124",
                 FirstMidName = "Daniel",
                 LastName = "Harris",
-                EnrollmentDate = DateOnly.Parse("1997-05-19"),
+                TestEnrollmentDate = DateOnly.Parse("1997-05-19"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "51234569",
                 FirstMidName = "Stephan",
                 LastName = "Martin",
-                EnrollmentDate = DateOnly.Parse("2020-09-27"),
+                TestEnrollmentDate = DateOnly.Parse("2020-09-27"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "45678903",
                 FirstMidName = "DavId",
                 LastName = "Thompson",
-                EnrollmentDate = DateOnly.Parse("2008-03-12"),
+                TestEnrollmentDate = DateOnly.Parse("2008-03-12"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "59012346",
                 FirstMidName = "Jennifer",
                 LastName = "Garcia",
-                EnrollmentDate = DateOnly.Parse("2016-11-25"),
+                TestEnrollmentDate = DateOnly.Parse("2016-11-25"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "43456781",
                 FirstMidName = "Andrew",
                 LastName = "Martinez",
-                EnrollmentDate = DateOnly.Parse("2002-08-03"),
+                TestEnrollmentDate = DateOnly.Parse("2002-08-03"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "56789014",
                 FirstMidName = "Nicole",
                 LastName = "Robinson",
-                EnrollmentDate = DateOnly.Parse("2011-01-16"),
+                TestEnrollmentDate = DateOnly.Parse("2011-01-16"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "50123457",
                 FirstMidName = "Ryan",
                 LastName = "Clark",
-                EnrollmentDate = DateOnly.Parse("1999-06-30"),
+                TestEnrollmentDate = DateOnly.Parse("1999-06-30"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "44567893",
                 FirstMidName = "Samantha",
                 LastName = "Rodriguez",
-                EnrollmentDate = DateOnly.Parse("2017-04-08"),
+                TestEnrollmentDate = DateOnly.Parse("2017-04-08"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "58901235",
                 FirstMidName = "Justin",
                 LastName = "Lewis",
-                EnrollmentDate = DateOnly.Parse("2004-12-19"),
+                TestEnrollmentDate = DateOnly.Parse("2004-12-19"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "42345680",
                 FirstMidName = "Lizabeth",
                 LastName = "Lee",
-                EnrollmentDate = DateOnly.Parse("2014-07-02"),
+                TestEnrollmentDate = DateOnly.Parse("2014-07-02"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "55678904",
                 FirstMidName = "Kevin",
                 LastName = "Walker",
-                EnrollmentDate = DateOnly.Parse("2000-02-14"),
+                TestEnrollmentDate = DateOnly.Parse("2000-02-14"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "49012347",
                 FirstMidName = "Heather",
                 LastName = "Hall",
-                EnrollmentDate = DateOnly.Parse("2009-10-28"),
+                TestEnrollmentDate = DateOnly.Parse("2009-10-28"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "53456782",
                 FirstMidName = "Brian",
                 LastName = "Allen",
-                EnrollmentDate = DateOnly.Parse("2022-05-11"),
+                TestEnrollmentDate = DateOnly.Parse("2022-05-11"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "46789015",
                 FirstMidName = "Michelle",
                 LastName = "Young",
-                EnrollmentDate = DateOnly.Parse("1996-09-23"),
+                TestEnrollmentDate = DateOnly.Parse("1996-09-23"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "40123458",
                 FirstMidName = "Jason",
                 LastName = "Hernandez",
-                EnrollmentDate = DateOnly.Parse("2006-03-07"),
+                TestEnrollmentDate = DateOnly.Parse("2006-03-07"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "54567894",
                 FirstMidName = "Melissa",
                 LastName = "King",
-                EnrollmentDate = DateOnly.Parse("2015-11-20"),
+                TestEnrollmentDate = DateOnly.Parse("2015-11-20"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "47890126",
                 FirstMidName = "James",
                 LastName = "Wright",
-                EnrollmentDate = DateOnly.Parse("2001-08-04"),
+                TestEnrollmentDate = DateOnly.Parse("2001-08-04"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "51234570",
                 FirstMidName = "Rebecca",
                 LastName = "Lopez",
-                EnrollmentDate = DateOnly.Parse("2019-01-17"),
+                TestEnrollmentDate = DateOnly.Parse("2019-01-17"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "45678905",
                 FirstMidName = "Tyler",
                 LastName = "Hill",
-                EnrollmentDate = DateOnly.Parse("2010-06-29"),
+                TestEnrollmentDate = DateOnly.Parse("2010-06-29"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "59012348",
                 FirstMidName = "Amy",
                 LastName = "Scott",
-                EnrollmentDate = DateOnly.Parse("1998-12-12"),
+                TestEnrollmentDate = DateOnly.Parse("1998-12-12"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "43456783",
                 FirstMidName = "Jacob",
                 LastName = "Green",
-                EnrollmentDate = DateOnly.Parse("2023-04-25"),
+                TestEnrollmentDate = DateOnly.Parse("2023-04-25"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "56789016",
                 FirstMidName = "Rachel",
                 LastName = "Adams",
-                EnrollmentDate = DateOnly.Parse("2007-09-08"),
+                TestEnrollmentDate = DateOnly.Parse("2007-09-08"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "50123459",
                 FirstMidName = "Nicholas",
                 LastName = "Baker",
-                EnrollmentDate = DateOnly.Parse("2016-02-20"),
+                TestEnrollmentDate = DateOnly.Parse("2016-02-20"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "44567895",
                 FirstMidName = "Kimberly",
                 LastName = "Gonzalez",
-                EnrollmentDate = DateOnly.Parse("2003-07-14"),
+                TestEnrollmentDate = DateOnly.Parse("2003-07-14"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "58901237",
                 FirstMidName = "Jonathan",
                 LastName = "Nelson",
-                EnrollmentDate = DateOnly.Parse("2012-12-26"),
+                TestEnrollmentDate = DateOnly.Parse("2012-12-26"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "42345682",
                 FirstMidName = "Lauren",
                 LastName = "Carter",
-                EnrollmentDate = DateOnly.Parse("2000-05-09"),
+                TestEnrollmentDate = DateOnly.Parse("2000-05-09"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "55678906",
                 FirstMidName = "Brittany",
                 LastName = "Perez",
-                EnrollmentDate = DateOnly.Parse("1997-03-05"),
+                TestEnrollmentDate = DateOnly.Parse("1997-03-05"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "49012349",
                 FirstMidName = "Austin",
                 LastName = "Roberts",
-                EnrollmentDate = DateOnly.Parse("2008-08-18"),
+                TestEnrollmentDate = DateOnly.Parse("2008-08-18"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "53456784",
                 FirstMidName = "Victoria",
                 LastName = "Turner",
-                EnrollmentDate = DateOnly.Parse("2018-01-30"),
+                TestEnrollmentDate = DateOnly.Parse("2018-01-30"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "46789017",
                 FirstMidName = "Zachary",
                 LastName = "Phillips",
-                EnrollmentDate = DateOnly.Parse("2005-06-13"),
+                TestEnrollmentDate = DateOnly.Parse("2005-06-13"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "40123460",
                 FirstMidName = "Chris",
                 LastName = "Campbell",
-                EnrollmentDate = DateOnly.Parse("2013-11-26"),
+                TestEnrollmentDate = DateOnly.Parse("2013-11-26"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "54567896",
                 FirstMidName = "Ethan",
                 LastName = "Parker",
-                EnrollmentDate = DateOnly.Parse("2002-04-09"),
+                TestEnrollmentDate = DateOnly.Parse("2002-04-09"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "47890128",
                 FirstMidName = "Danielle",
                 LastName = "Evans",
-                EnrollmentDate = DateOnly.Parse("2020-09-21"),
+                TestEnrollmentDate = DateOnly.Parse("2020-09-21"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "51234572",
                 FirstMidName = "Nathan",
                 LastName = "Edwards",
-                EnrollmentDate = DateOnly.Parse("1999-02-03"),
+                TestEnrollmentDate = DateOnly.Parse("1999-02-03"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "45678907",
                 FirstMidName = "Amber",
                 LastName = "Collins",
-                EnrollmentDate = DateOnly.Parse("2009-07-17"),
+                TestEnrollmentDate = DateOnly.Parse("2009-07-17"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "59012350",
                 FirstMidName = "Kyle",
                 LastName = "Stewart",
-                EnrollmentDate = DateOnly.Parse("2017-12-30"),
+                TestEnrollmentDate = DateOnly.Parse("2017-12-30"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "43456785",
                 FirstMidName = "Alexis",
                 LastName = "Sanchez",
-                EnrollmentDate = DateOnly.Parse("2004-05-12"),
+                TestEnrollmentDate = DateOnly.Parse("2004-05-12"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "56789018",
                 FirstMidName = "Cody",
                 LastName = "Morris",
-                EnrollmentDate = DateOnly.Parse("2014-10-25"),
+                TestEnrollmentDate = DateOnly.Parse("2014-10-25"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "50123461",
                 FirstMidName = "Courtney",
                 LastName = "Rogers",
-                EnrollmentDate = DateOnly.Parse("2001-03-08"),
+                TestEnrollmentDate = DateOnly.Parse("2001-03-08"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "44567897",
                 FirstMidName = "Aaron",
                 LastName = "Reed",
-                EnrollmentDate = DateOnly.Parse("2011-08-21"),
+                TestEnrollmentDate = DateOnly.Parse("2011-08-21"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "58901239",
                 FirstMidName = "Kayla",
                 LastName = "Cook",
-                EnrollmentDate = DateOnly.Parse("1998-01-04"),
+                TestEnrollmentDate = DateOnly.Parse("1998-01-04"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "42345684",
                 FirstMidName = "Jordan",
                 LastName = "Morgan",
-                EnrollmentDate = DateOnly.Parse("2019-06-17"),
+                TestEnrollmentDate = DateOnly.Parse("2019-06-17"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "55678908",
                 FirstMidName = "Kristen",
                 LastName = "Bell",
-                EnrollmentDate = DateOnly.Parse("2006-11-29"),
+                TestEnrollmentDate = DateOnly.Parse("2006-11-29"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "49012351",
                 FirstMidName = "Dylan",
                 LastName = "Murphy",
-                EnrollmentDate = DateOnly.Parse("2015-04-13"),
+                TestEnrollmentDate = DateOnly.Parse("2015-04-13"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "53456786",
                 FirstMidName = "Taylor",
                 LastName = "Bailey",
-                EnrollmentDate = DateOnly.Parse("2003-09-26"),
+                TestEnrollmentDate = DateOnly.Parse("2003-09-26"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "46789019",
                 FirstMidName = "Morgan",
                 LastName = "Rivera",
-                EnrollmentDate = DateOnly.Parse("2012-02-08"),
+                TestEnrollmentDate = DateOnly.Parse("2012-02-08"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "40123462",
                 FirstMidName = "Travis",
                 LastName = "Cooper",
-                EnrollmentDate = DateOnly.Parse("2000-07-22"),
+                TestEnrollmentDate = DateOnly.Parse("2000-07-22"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "54567898",
                 FirstMidName = "Hannah",
                 LastName = "Richard",
-                EnrollmentDate = DateOnly.Parse("2021-12-04"),
+                TestEnrollmentDate = DateOnly.Parse("2021-12-04"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "47890130",
                 FirstMidName = "Adam",
                 LastName = "Cox",
-                EnrollmentDate = DateOnly.Parse("1997-05-18"),
+                TestEnrollmentDate = DateOnly.Parse("1997-05-18"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "51234574",
                 FirstMidName = "Sydney",
                 LastName = "Howard",
-                EnrollmentDate = DateOnly.Parse("2008-10-31"),
+                TestEnrollmentDate = DateOnly.Parse("2008-10-31"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "45678909",
                 FirstMidName = "Lucas",
                 LastName = "Ward",
-                EnrollmentDate = DateOnly.Parse("2018-03-15"),
+                TestEnrollmentDate = DateOnly.Parse("2018-03-15"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "59012352",
                 FirstMidName = "Allison",
                 LastName = "Torres",
-                EnrollmentDate = DateOnly.Parse("2005-08-28"),
+                TestEnrollmentDate = DateOnly.Parse("2005-08-28"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "43456787",
                 FirstMidName = "Mason",
                 LastName = "Peterson",
-                EnrollmentDate = DateOnly.Parse("2013-01-10"),
+                TestEnrollmentDate = DateOnly.Parse("2013-01-10"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "56789020",
                 FirstMidName = "Olivia",
                 LastName = "Gray",
-                EnrollmentDate = DateOnly.Parse("2002-06-24"),
+                TestEnrollmentDate = DateOnly.Parse("2002-06-24"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "50123463",
                 FirstMidName = "Logan",
                 LastName = "Ramirez",
-                EnrollmentDate = DateOnly.Parse("2020-11-06"),
+                TestEnrollmentDate = DateOnly.Parse("2020-11-06"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "44567899",
                 FirstMidName = "Emma",
                 LastName = "James",
-                EnrollmentDate = DateOnly.Parse("1999-04-20"),
+                TestEnrollmentDate = DateOnly.Parse("1999-04-20"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "58901241",
                 FirstMidName = "Connor",
                 LastName = "Watson",
-                EnrollmentDate = DateOnly.Parse("2010-09-02"),
+                TestEnrollmentDate = DateOnly.Parse("2010-09-02"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "42345686",
                 FirstMidName = "Sophia",
                 LastName = "Brooks",
-                EnrollmentDate = DateOnly.Parse("2007-02-15"),
+                TestEnrollmentDate = DateOnly.Parse("2007-02-15"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "55678910",
                 FirstMidName = "Liam",
                 LastName = "Kelly",
-                EnrollmentDate = DateOnly.Parse("2016-07-29"),
+                TestEnrollmentDate = DateOnly.Parse("2016-07-29"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "49012353",
                 FirstMidName = "Isabella",
                 LastName = "Sanders",
-                EnrollmentDate = DateOnly.Parse("2004-12-11"),
+                TestEnrollmentDate = DateOnly.Parse("2004-12-11"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "53456788",
                 FirstMidName = "Noah",
                 LastName = "Price",
-                EnrollmentDate = DateOnly.Parse("2014-05-24"),
+                TestEnrollmentDate = DateOnly.Parse("2014-05-24"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "46789021",
                 FirstMidName = "Ava",
                 LastName = "Bennett",
-                EnrollmentDate = DateOnly.Parse("2001-10-07"),
+                TestEnrollmentDate = DateOnly.Parse("2001-10-07"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "40123464",
                 FirstMidName = "William",
                 LastName = "Wood",
-                EnrollmentDate = DateOnly.Parse("2011-03-21"),
+                TestEnrollmentDate = DateOnly.Parse("2011-03-21"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "54567900",
                 FirstMidName = "Mia",
                 LastName = "Barnes",
-                EnrollmentDate = DateOnly.Parse("1998-08-04"),
+                TestEnrollmentDate = DateOnly.Parse("1998-08-04"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "47890132",
                 FirstMidName = "Benjamin",
                 LastName = "Ross",
-                EnrollmentDate = DateOnly.Parse("2019-01-17"),
+                TestEnrollmentDate = DateOnly.Parse("2019-01-17"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "51234576",
                 FirstMidName = "Charl",
                 LastName = "Henderson",
-                EnrollmentDate = DateOnly.Parse("2006-06-30"),
+                TestEnrollmentDate = DateOnly.Parse("2006-06-30"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "45678911",
                 FirstMidName = "Elijah",
                 LastName = "Coleman",
-                EnrollmentDate = DateOnly.Parse("2015-12-13"),
+                TestEnrollmentDate = DateOnly.Parse("2015-12-13"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "59012354",
                 FirstMidName = "Amelia",
                 LastName = "Jenkins",
-                EnrollmentDate = DateOnly.Parse("2003-05-27"),
+                TestEnrollmentDate = DateOnly.Parse("2003-05-27"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "43456789",
                 FirstMidName = "Oliver",
                 LastName = "Perry",
-                EnrollmentDate = DateOnly.Parse("2012-10-09"),
+                TestEnrollmentDate = DateOnly.Parse("2012-10-09"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "56789022",
                 FirstMidName = "Harper",
                 LastName = "Powell",
-                EnrollmentDate = DateOnly.Parse("2000-03-23"),
+                TestEnrollmentDate = DateOnly.Parse("2000-03-23"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "50123465",
                 FirstMidName = "Henry",
                 LastName = "Long",
-                EnrollmentDate = DateOnly.Parse("2021-08-05"),
+                TestEnrollmentDate = DateOnly.Parse("2021-08-05"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "44567901",
                 FirstMidName = "Evelyn",
                 LastName = "Patterson",
-                EnrollmentDate = DateOnly.Parse("1997-01-19"),
+                TestEnrollmentDate = DateOnly.Parse("1997-01-19"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "58901243",
                 FirstMidName = "Alex",
                 LastName = "Hughes",
-                EnrollmentDate = DateOnly.Parse("2009-06-03"),
+                TestEnrollmentDate = DateOnly.Parse("2009-06-03"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "42345688",
                 FirstMidName = "Abigail",
                 LastName = "Flores",
-                EnrollmentDate = DateOnly.Parse("2017-11-16"),
+                TestEnrollmentDate = DateOnly.Parse("2017-11-16"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "55678912",
                 FirstMidName = "Sebas",
                 LastName = "Washing",
-                EnrollmentDate = DateOnly.Parse("2005-04-30"),
+                TestEnrollmentDate = DateOnly.Parse("2005-04-30"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "49012355",
                 FirstMidName = "Emily",
                 LastName = "Butler",
-                EnrollmentDate = DateOnly.Parse("2013-09-12"),
+                TestEnrollmentDate = DateOnly.Parse("2013-09-12"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "53456790",
                 FirstMidName = "Jack",
                 LastName = "Simmons",
-                EnrollmentDate = DateOnly.Parse("2002-02-26"),
+                TestEnrollmentDate = DateOnly.Parse("2002-02-26"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "46789023",
                 FirstMidName = "Ella",
                 LastName = "Foster",
-                EnrollmentDate = DateOnly.Parse("2020-07-10"),
+                TestEnrollmentDate = DateOnly.Parse("2020-07-10"),
             },
-            new Student
+            new TestStudent
             {
                 GovernmentId = "40123466",
                 FirstMidName = "AIden",
                 LastName = "Gonzales",
-                EnrollmentDate = DateOnly.Parse("1999-12-23"),
+                TestEnrollmentDate = DateOnly.Parse("1999-12-23"),
             },
         ];
     }
 
-    private static IEnumerable<Contact> GetContacts(string userID, string managerID, string adminID)
+    private static IEnumerable<TestContact> GetTestContacts(string userID, string managerID, string adminID)
     {
         return
         [
             // userID
-            new Contact
+            new TestContact
             {
                 Name = "Sarah Mitchell",
                 Address = "842 Oak Boulevard",
@@ -1198,10 +1198,10 @@ public static class DbInitializer
                 State = "WA",
                 Zip = "98101",
                 Email = "sarah.mitchell@example.com",
-                Status = ContactStatus.Approved,
+                Status = TestContactStatus.Approved,
                 OwnerID = userID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Marcus Johnson",
                 Address = "1567 Pine Street",
@@ -1209,10 +1209,10 @@ public static class DbInitializer
                 State = "OR",
                 Zip = "97204",
                 Email = "marcus.j@example.com",
-                Status = ContactStatus.Submitted,
+                Status = TestContactStatus.Submitted,
                 OwnerID = userID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Elena Rodriguez",
                 Address = "3921 Elm Avenue",
@@ -1220,10 +1220,10 @@ public static class DbInitializer
                 State = "CA",
                 Zip = "94102",
                 Email = "elena.rodriguez@example.com",
-                Status = ContactStatus.Rejected,
+                Status = TestContactStatus.Rejected,
                 OwnerID = userID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "James Chen",
                 Address = "2145 Cedar Lane",
@@ -1231,10 +1231,10 @@ public static class DbInitializer
                 State = "CA",
                 Zip = "90012",
                 Email = "jchen@example.com",
-                Status = ContactStatus.Approved,
+                Status = TestContactStatus.Approved,
                 OwnerID = userID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Olivia Thompson",
                 Address = "6783 Birch Road",
@@ -1242,10 +1242,10 @@ public static class DbInitializer
                 State = "TX",
                 Zip = "78701",
                 Email = "olivia.thompson@example.com",
-                Status = ContactStatus.Submitted,
+                Status = TestContactStatus.Submitted,
                 OwnerID = userID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Alexander Petrov",
                 Address = "4512 Willow Drive",
@@ -1253,10 +1253,10 @@ public static class DbInitializer
                 State = "CO",
                 Zip = "80202",
                 Email = "a.petrov@example.com",
-                Status = ContactStatus.Approved,
+                Status = TestContactStatus.Approved,
                 OwnerID = userID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Sophia Anderson",
                 Address = "8934 Spruce Court",
@@ -1264,10 +1264,10 @@ public static class DbInitializer
                 State = "IL",
                 Zip = "60601",
                 Email = "sophia.anderson@example.com",
-                Status = ContactStatus.Rejected,
+                Status = TestContactStatus.Rejected,
                 OwnerID = userID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "David Kim",
                 Address = "1298 Maple Circle",
@@ -1275,11 +1275,11 @@ public static class DbInitializer
                 State = "MA",
                 Zip = "02108",
                 Email = "david.kim@example.com",
-                Status = ContactStatus.Submitted,
+                Status = TestContactStatus.Submitted,
                 OwnerID = userID,
             },
             // managerID
-            new Contact
+            new TestContact
             {
                 Name = "Isabella Martinez",
                 Address = "5673 Aspen Way",
@@ -1287,10 +1287,10 @@ public static class DbInitializer
                 State = "FL",
                 Zip = "33101",
                 Email = "isabella.m@example.com",
-                Status = ContactStatus.Approved,
+                Status = TestContactStatus.Approved,
                 OwnerID = managerID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Ryan O'Brien",
                 Address = "7821 Cypress Path",
@@ -1298,10 +1298,10 @@ public static class DbInitializer
                 State = "AZ",
                 Zip = "85001",
                 Email = "ryan.obrien@example.com",
-                Status = ContactStatus.Rejected,
+                Status = TestContactStatus.Rejected,
                 OwnerID = managerID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Amelia Zhang",
                 Address = "3456 Redwood Street",
@@ -1309,10 +1309,10 @@ public static class DbInitializer
                 State = "CA",
                 Zip = "92101",
                 Email = "amelia.zhang@example.com",
-                Status = ContactStatus.Submitted,
+                Status = TestContactStatus.Submitted,
                 OwnerID = managerID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Nathan Brooks",
                 Address = "9087 Hickory Lane",
@@ -1320,10 +1320,10 @@ public static class DbInitializer
                 State = "TN",
                 Zip = "37201",
                 Email = "n.brooks@example.com",
-                Status = ContactStatus.Approved,
+                Status = TestContactStatus.Approved,
                 OwnerID = managerID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Mia Patel",
                 Address = "2341 Magnolia Drive",
@@ -1331,10 +1331,10 @@ public static class DbInitializer
                 State = "GA",
                 Zip = "30301",
                 Email = "mia.patel@example.com",
-                Status = ContactStatus.Submitted,
+                Status = TestContactStatus.Submitted,
                 OwnerID = managerID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Lucas Wagner",
                 Address = "6789 Poplar Avenue",
@@ -1342,10 +1342,10 @@ public static class DbInitializer
                 State = "MN",
                 Zip = "55401",
                 Email = "lucas.wagner@example.com",
-                Status = ContactStatus.Rejected,
+                Status = TestContactStatus.Rejected,
                 OwnerID = managerID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Emma Larsson",
                 Address = "4523 Chestnut Boulevard",
@@ -1353,10 +1353,10 @@ public static class DbInitializer
                 State = "UT",
                 Zip = "84101",
                 Email = "emma.larsson@example.com",
-                Status = ContactStatus.Approved,
+                Status = TestContactStatus.Approved,
                 OwnerID = managerID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Christopher Hayes",
                 Address = "2156 Sycamore Street",
@@ -1364,11 +1364,11 @@ public static class DbInitializer
                 State = "PA",
                 Zip = "19101",
                 Email = "chris.hayes@example.com",
-                Status = ContactStatus.Submitted,
+                Status = TestContactStatus.Submitted,
                 OwnerID = managerID,
             },
             // adminID
-            new Contact
+            new TestContact
             {
                 Name = "Victoria Santos",
                 Address = "8745 Walnut Avenue",
@@ -1376,10 +1376,10 @@ public static class DbInitializer
                 State = "TX",
                 Zip = "75201",
                 Email = "victoria.santos@example.com",
-                Status = ContactStatus.Approved,
+                Status = TestContactStatus.Approved,
                 OwnerID = adminID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Benjamin Foster",
                 Address = "3298 Cherry Lane",
@@ -1387,10 +1387,10 @@ public static class DbInitializer
                 State = "TX",
                 Zip = "77001",
                 Email = "ben.foster@example.com",
-                Status = ContactStatus.Rejected,
+                Status = TestContactStatus.Rejected,
                 OwnerID = adminID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Charlotte Murphy",
                 Address = "6541 Beech Road",
@@ -1398,10 +1398,10 @@ public static class DbInitializer
                 State = "MI",
                 Zip = "48201",
                 Email = "charlotte.murphy@example.com",
-                Status = ContactStatus.Submitted,
+                Status = TestContactStatus.Submitted,
                 OwnerID = adminID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Daniel Rivera",
                 Address = "9876 Dogwood Court",
@@ -1409,10 +1409,10 @@ public static class DbInitializer
                 State = "CA",
                 Zip = "95101",
                 Email = "daniel.rivera@example.com",
-                Status = ContactStatus.Approved,
+                Status = TestContactStatus.Approved,
                 OwnerID = adminID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Grace Coleman",
                 Address = "1432 Juniper Drive",
@@ -1420,10 +1420,10 @@ public static class DbInitializer
                 State = "OH",
                 Zip = "43201",
                 Email = "grace.coleman@example.com",
-                Status = ContactStatus.Rejected,
+                Status = TestContactStatus.Rejected,
                 OwnerID = adminID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Ethan Price",
                 Address = "7654 Fir Street",
@@ -1431,10 +1431,10 @@ public static class DbInitializer
                 State = "IN",
                 Zip = "46201",
                 Email = "ethan.price@example.com",
-                Status = ContactStatus.Submitted,
+                Status = TestContactStatus.Submitted,
                 OwnerID = adminID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "Ava Patterson",
                 Address = "5123 Laurel Boulevard",
@@ -1442,10 +1442,10 @@ public static class DbInitializer
                 State = "NC",
                 Zip = "28201",
                 Email = "ava.patterson@example.com",
-                Status = ContactStatus.Approved,
+                Status = TestContactStatus.Approved,
                 OwnerID = adminID,
             },
-            new Contact
+            new TestContact
             {
                 Name = "William Hughes",
                 Address = "4789 Hawthorn Way",
@@ -1453,7 +1453,7 @@ public static class DbInitializer
                 State = "FL",
                 Zip = "32201",
                 Email = "william.hughes@example.com",
-                Status = ContactStatus.Submitted,
+                Status = TestContactStatus.Submitted,
                 OwnerID = adminID,
             },
         ];
