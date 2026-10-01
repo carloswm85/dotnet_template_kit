@@ -16,7 +16,7 @@
     "@angular/forms": "^20.2.0",
     "@angular/platform-browser": "^20.2.0",
     "@angular/platform-browser-dynamic": "^20.2.0",
-    "@angular/router": "^20.2.0",
+    "@angular/router": "^20.3.32",
     "jest-editor-support": "*",
     "run-script-os": "*",
     "rxjs": "~7.8.0",
