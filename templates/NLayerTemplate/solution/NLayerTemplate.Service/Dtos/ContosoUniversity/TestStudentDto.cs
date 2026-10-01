@@ -75,14 +75,14 @@ namespace NLayerTemplate.Service.Dtos.ContosoUniversity
         public string? ImagePath { get; set; }
         public IFormFile? Image { get; set; }
 
-        [Required(ErrorMessage = "TestEnrollment date is required")]
+        [Required(ErrorMessage = "Enrollment date is required")]
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
-        [Display(Name = "TestEnrollment Date")]
+        [Display(Name = "Enrollment Date")]
         [DateRange(
             "1950-01-01",
             50,
-            ErrorMessage = "TestEnrollment Date must be between 1950 and 50 years from now"
+            ErrorMessage = "Enrollment Date must be between 1950 and 50 years from now"
         )]
         public DateOnly? TestEnrollmentDate { get; set; }
 

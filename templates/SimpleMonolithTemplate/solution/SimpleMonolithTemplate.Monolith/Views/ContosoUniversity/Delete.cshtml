@@ -2,7 +2,7 @@
 @model TestStudentDto
 
 @{
-    ViewData["Title"] = "Delete TestStudent";
+    ViewData["Title"] = "Delete Student";
 }
 
 <div class="container mt-5">
@@ -10,7 +10,7 @@
         <div class="col-md-6">
             <div class="card shadow rounded-3 border">
                 <div class="card-header border-0 bg-danger text-white">
-                    <h4 class="mb-0">Delete TestStudent</h4>
+                    <h4 class="mb-0">Delete Student</h4>
                     <p class="text-danger">@ViewData["ErrorMessage"]</p>
                 </div>
                 <div class="card-body">
@@ -22,7 +22,7 @@
                              src="@(string.IsNullOrEmpty(Model?.ImagePath)
                                                              ? Url.Content("~/images/defaults/default-person.png")
                                                              : Url.Content(Model.ImagePath))"
-                             alt="TestStudent profile"
+                             alt="Student profile"
                              class="img-thumbnail"
                              style="max-width: 150px;" />
                     </div>
@@ -68,7 +68,7 @@
                     }
                     else
                     {
-                        <div class="alert alert-warning">TestStudent not found.</div>
+                        <div class="alert alert-warning">Student not found.</div>
                     }
                 </div>
             </div>

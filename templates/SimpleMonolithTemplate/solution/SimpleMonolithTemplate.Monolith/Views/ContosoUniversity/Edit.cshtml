@@ -2,7 +2,7 @@
 @model TestStudentDto
 
 @{
-    ViewData["Title"] = "Edit TestStudent";
+    ViewData["Title"] = "Edit Student";
 }
 
 <div class="container my-5">
@@ -10,7 +10,7 @@
         <div class="col-md-6">
             <div class="card shadow-lg rounded-3">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Edit TestStudent</h4>
+                    <h4 class="mb-0">Edit Student</h4>
                 </div>
                 <div class="card-body">
 
@@ -32,7 +32,7 @@
                                 src="@(string.IsNullOrEmpty(Model?.ImagePath)
                                     ? Url.Content("~/images/defaults/default-person.png")
                                     : Url.Content(Model.ImagePath))"                                
-                                alt="TestStudent profile"
+                                alt="Student profile"
                                 class="img-thumbnail"
                                 style="max-width: 150px;" />
                         </div>

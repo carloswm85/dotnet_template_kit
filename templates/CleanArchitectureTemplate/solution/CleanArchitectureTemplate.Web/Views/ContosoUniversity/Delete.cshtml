@@ -2,7 +2,7 @@
 @model TestStudentDto
 
 @{
-    ViewData["Title"] = "Delete TestStudent";
+    ViewData["Title"] = "Delete Student";
 }
 
 <div class="my-3">
@@ -29,7 +29,7 @@
                                  src="@(string.IsNullOrEmpty(Model?.ImagePath)
                                                                                                   ? Url.Content("~/images/defaults/default-person.png")
                                                                                                   : Url.Content(Model.ImagePath))"
-                                 alt="TestStudent profile"
+                                 alt="Student profile"
                                  class="img-thumbnail"
                                  style="max-width: 150px;" />
                         </div>
