@@ -23,9 +23,9 @@
                 "build": {
                     "builder": "@angular/build:application",
                     "options": {
-                        "outputPath": "dist/nlayertemplate.web.angular",
-                        "index": "solution/index.html",
-                        "browser": "solution/main.ts",
+                        "outputPath": "dist/NLayerTemplate.Web.Angular",
+                        "index": "src/index.html",
+                        "browser": "src/main.ts",
                         "polyfills": [
                             "zone.js"
                         ],
@@ -37,7 +37,7 @@
                             }
                         ],
                         "styles": [
-                            "solution/styles.css"
+                            "src/styles.css"
                         ],
                         "scripts": []
                     },
@@ -78,7 +78,7 @@
                     "defaultConfiguration": "development",
                     "options": {
                         "ssl": false,
-                        "proxyConfig": "solution/proxy.conf.js",
+                        "proxyConfig": "src/proxy.conf.js",
                         "port": 6024
                     }
                 },
@@ -100,7 +100,7 @@
                             }
                         ],
                         "styles": [
-                            "solution/styles.css"
+                            "src/styles.css"
                         ],
                         "scripts": [],
                         "karmaConfig": "karma.conf.js"

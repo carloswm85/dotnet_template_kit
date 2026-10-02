@@ -4,21 +4,27 @@
     <PackageType>Template</PackageType>
     <PackageVersion>2.0</PackageVersion>
     <PackageId>DotNetTemplateKit</PackageId>
-    <Title>DotNet Template Kit</Title>
+    <Title>DTK N-Layer with Angular Template</Title>
     <Authors>Carlos Mercado</Authors>
-    <Description>This is a solution template for you to use</Description>
-    <PackageTags>dotnet-new;templates</PackageTags>
+    <Description>Archived DTK N-Layer solution template with ASP.NET Core API, MVC, and Angular projects.</Description>
+    <PackageTags>dotnet-new;template;n-layer;aspnet-core;angular</PackageTags>
     <TargetFramework>netstandard2.0</TargetFramework>
 
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <ContentTargetFolders>content</ContentTargetFolders>
     <NoDefaultExcludes>true</NoDefaultExcludes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="templates\**\*" Exclude="templates\**\bin**;templates\**\obj**" />
+    <Content
+      Include="templates\NLayerTemplate\**\*"
+      Exclude="templates\NLayerTemplate\**\bin\**;templates\NLayerTemplate\**\obj\**;templates\NLayerTemplate\**\node_modules\**;templates\NLayerTemplate\**\dist\**;templates\NLayerTemplate\**\wwwroot\lib\**"
+    />
     <Compile Remove="**\*" />
+    <None Update="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

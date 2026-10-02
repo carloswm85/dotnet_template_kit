@@ -89,7 +89,7 @@ public class StartUp
 
     // === REQUEST PIPELINE
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public async void Configure(
+    public void Configure(
         IApplicationBuilder app,
         IWebHostEnvironment env,
         ILoggerFactory loggerFactory
@@ -149,7 +149,7 @@ public class StartUp
             var logger = serviceProvider.GetRequiredService<ILogger<StartUp>>();
             try
             {
-                await DbInitializer.Initialize(serviceProvider);
+                DbInitializer.Initialize(serviceProvider).GetAwaiter().GetResult();
 
                 logger.LogInformation("Database successfully initialized (Web MVC).");
 
