@@ -369,7 +369,7 @@ public class ContosoUniversityController : Controller
                 == ADDITIONAL SUGGESTIONS ==
                 
                 - You can connect the API directly to MVC, instead of going directly from the Service layer to MVC
-                - Implement all the endpoints from the API in the Angular layer, or a mobile project
+                - Implement all the endpoints from the API in a client application, such as a mobile project
                 ";
         return Ok(instructions);
     }

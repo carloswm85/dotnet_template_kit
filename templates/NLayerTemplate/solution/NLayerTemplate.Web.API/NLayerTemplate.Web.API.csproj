@@ -5,10 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    <!-- Angular SPA dev proxy configuration -->
-    <SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
-    <SpaRoot>..\NLayerTemplate.Web.Angular</SpaRoot>
-    <SpaProxyServerUrl>https://localhost:6024</SpaProxyServerUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +12,6 @@
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.1" />
     <PackageReference Include="Mapster.DependencyInjection" Version="10.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="10.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

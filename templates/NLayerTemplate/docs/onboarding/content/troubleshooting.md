@@ -2,7 +2,6 @@
   - [NET Core](#net-core)
     - [HTTPS Developer ASP.NET Certificate](#https-developer-aspnet-certificate)
     - [API](#api)
-  - [Angular Project](#angular-project)
 
 ---
 
@@ -24,9 +23,3 @@
 
 - The API project does not work in Visual Studio 2022.
 - Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported, use Visual Studio 2026 instead.
-
----
-
-## Angular Project
-
-None.

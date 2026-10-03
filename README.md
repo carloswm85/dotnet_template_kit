@@ -29,6 +29,7 @@
     - **Lightweight monolith** for smaller applications,
     - **N-layer** solution for clear separation of concerns, or
     - **Clean Architecture** template for domain-rich systems with strict dependency boundaries.
+- The previous N-Layer Angular client implementation is preserved in the [`archive/dtk-nlayer-with-angular`](https://github.com/carloswm85/dotnet-template-kit/tree/archive/dtk-nlayer-with-angular) branch.
 
 ---
 

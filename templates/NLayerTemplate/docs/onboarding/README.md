@@ -3,7 +3,6 @@
     - [Table: .NET Core](#table-net-core)
     - [Table: Identity API](#table-identity-api)
     - [Table: MVC](#table-mvc)
-    - [Table: Angular](#table-angular)
   - [Content](#content)
     - [`Contoso University` Tutorial Example](#contoso-university-tutorial-example)
 
@@ -11,7 +10,7 @@
 
 | STATUS                                                                |
 | --------------------------------------------------------------------- |
-| .NET Core 10 and Angular 20 solution.                                 |
+| .NET Core 10 solution with API and MVC presentation projects.          |
 | You can find previous functional versions in the repository branches. |
 
 ---
@@ -49,16 +48,6 @@
 - Used `libman.json` for client side libraries.
 - Bootstrap `+5.x` does not depend on `jQuery`.
 
-### Table: Angular
-
-| Current | Angular Version      | Angular Release Type   | Node.js Version                       | TypeScript Version | RxJS Version         | Status                                   |
-| ------- | -------------------- | ---------------------- | ------------------------------------- | ------------------ | -------------------- | ---------------------------------------- |
-| ✅      | `20.2.x` or `20.3.x` | LTS (ends: 2026-11-28) | `^20.19.0` or `^22.12.0` or `^24.0.0` | `>=5.9.0 <6.0.0`   | `^6.5.3` or `^7.4.0` | Under development                        |
-|         | `19.2.x`             | LTS (ends: 2026-05-19) | `^18.19.1` or `^20.11.1` or `^22.0.0` | `>=5.5.0 <5.9.0`   | `^6.5.3` or `^7.4.0` | Only with basic development setup added. |
-|         | `18.1.x` or `18.2.x` | Out of support         | `^18.19.1` or `^20.11.1` or `^22.0.0` | `>=5.4.0 <5.6.0`   | `^6.5.3` or `^7.4.0` | Not available                            |
-
----
-
 ## Content
 
 - Section 1:
@@ -70,7 +59,6 @@
   - Dependencies:
     - [NET Core](./content/dependencies-net-core.md)
       - [Identity API](./content/identity-api.md)
-    - [Angular](./content/dependencies-angular.md)
 - Section 3:
   - [Education](./content/education.md)
 

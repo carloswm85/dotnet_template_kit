@@ -19,14 +19,13 @@
 | 3     | `Service`     | Business logic                     | Implement business logic, enforce rules and validation.                          | Business logic, validation, orchestration                                  | FluentValidation, async/await patterns, domain services                                    | `Repository`       | **Application Layer** (Use Cases/Application Services) + **Domain Layer** (Domain Services) |
 | 4.a   | `API`         | Request handling, Dev presentation | Expose business services as RESTful endpoints.                                   | RESTful API, documentation, API interface                                  | ASP\.NET Core Web API, Swagger/OpenAPI, API versioning, JWT authentication                 | `Service`          | **Presentation Layer** (API Controllers/Endpoints)                                          |
 | 4.b   | `Web.MVC`     | User presentation                  | Traditional server-rendered UI using MVC and Razor Pages.                        | Server-side rendering, UI logic, form handling                             | ASP\.NET Core MVC, Razor Pages, ViewModels, Tag Helpers                                    | `Service` or `API` | **Presentation Layer** (MVC Controllers/Views)                                              |
-| 4.c   | `Web.Angular` | User presentation                  | Modern client-side SPA experience.                                               | Client-side SPA, dynamic UI, state management                              | Angular (TypeScript), RxJS, HttpClient, REST API integration, Component-based architecture | `API`              | **Presentation Layer** (UI Components)                                                      |
 
 ## Cross-Cutting Concerns For All Layers
 
 These span multiple layers:
 
 - **Logging**: Serilog, NLog (all layers)
-- **Authentication/Authorization**: ASP\.NET Core Identity, JWT (API, Web.MVC, Web.Angular)
+- **Authentication/Authorization**: ASP\.NET Core Identity, JWT (API and Web.MVC)
 - **Error Handling**: Global exception filters, middleware (API, Web.MVC)
 - **Dependency Injection**: Built-in ASP\.NET Core DI container (all layers)
 
@@ -57,7 +56,7 @@ These span multiple layers:
 
 4. **Presentation Layer** - Depends on Application
    - User interface concerns
-   - Equivalent to `API`, `Web.MVC`, and `Web.Angular` layers
+   - Equivalent to `API` and `Web.MVC` layers
    - Controllers, views, API endpoints
    - Input validation, authentication/authorization middleware
    - Presentation models (ViewModels, DTOs for API responses)
@@ -105,7 +104,6 @@ flowchart
     end
     subgraph Clients["💻 Client Applications"]
       MVC[Web.MVC]
-      SPA[Web.Angular]
       MOB["📱Independent Mobile Project (not part of this template)"]
     end
 
@@ -117,7 +115,6 @@ flowchart
   SVC <--> REST
   SVC <--> MVC
   REST <--> MVC
-  REST <--> SPA
   REST <--> MOB
 ```
 
