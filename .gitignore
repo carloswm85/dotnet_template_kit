@@ -2,3 +2,6 @@
 [Oo]bj/
 [Bb]in/
 .vs/
+
+# Claude Code local session files
+.claude/
