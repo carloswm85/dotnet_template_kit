@@ -9,10 +9,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using CleanArchitectureTemplate.Web;
 using Xunit;
+// Alias: the API project also defines a top-level Program class.
+using WebProgram = CleanArchitectureTemplate.Web.Program;
 
 namespace CleanArchitectureTemplate.Tests.Integration.Web;
 
-public sealed class IntegrationWebApplicationFactory : WebApplicationFactory<Program>
+public sealed class IntegrationWebApplicationFactory : WebApplicationFactory<WebProgram>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
