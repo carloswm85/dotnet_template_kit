@@ -61,7 +61,10 @@
                 "**/*.user",
                 "**/*.suo",
                 "**/.template.config/**",
-                "**/*.cache"
+                "**/*.cache",
+                "**/.env",
+                "**/appsettings.Development.json",
+                "**/DataProtection-Keys/**"
             ]
         }
     ],

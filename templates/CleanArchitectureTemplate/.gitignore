@@ -418,3 +418,12 @@ FodyWeavers.xsd
 ######################################## VisualStudio Patch
 # Additional files built by Visual Studio
 *.bak
+
+# ==============================================================================
+# Local configuration and secrets
+# Commit only the *.example files; copy them to the real names locally.
+# ==============================================================================
+.env
+.env.*
+!.env.example
+appsettings.Development.json

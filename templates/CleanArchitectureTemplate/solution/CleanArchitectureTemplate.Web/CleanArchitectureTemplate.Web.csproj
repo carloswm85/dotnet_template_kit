@@ -26,4 +26,8 @@
     <ProjectReference Include="..\CleanArchitectureTemplate.ApplicationCore\CleanArchitectureTemplate.ApplicationCore.csproj" />
     <ProjectReference Include="..\CleanArchitectureTemplate.Infrastructure\CleanArchitectureTemplate.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Setup templates only: never copy them to build or publish output. -->
+    <Content Update="appsettings.*.example.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+  </ItemGroup>
 </Project>
