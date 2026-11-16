@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+
+    <title>@ViewData["Title"] - CleanArchitectureTemplate</title>
+
+    <link rel="icon" href="~/favicon.ico" sizes="any" />
+
+    <script>
+        document.documentElement.dataset.bsTheme =
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+    </script>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+
+<body class="bg-body-tertiary m-0">
+    @RenderBody()
+</body>
+
+</html>

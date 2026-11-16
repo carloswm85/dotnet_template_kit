@@ -12,12 +12,16 @@ using CleanArchitectureTemplate.Infrastructure.Services;
 using CleanArchitectureTemplate.Infrastructure.Services.ContosoServices;
 using CleanArchitectureTemplate.Infrastructure.Services.ExternalServices;
 using CleanArchitectureTemplate.Infrastructure.Services.IdentityServices;
+using CleanArchitectureTemplate.Web.HealthChecks;
 using CleanArchitectureTemplate.Web.Mappings;
+using CleanArchitectureTemplate.Web.Middleware;
 using CleanArchitectureTemplate.Web.Services;
 using CleanArchitectureTemplate.Web.Services.Interfaces;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -50,6 +54,16 @@ public class StartUp
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure())
         );
+
+        // === DATA PROTECTION ===
+        // In a container, persist keys to a mounted volume so auth cookies and
+        // antiforgery tokens survive restarts and redeploys.
+        AddContainerDataProtection(services);
+
+        // === HEALTH CHECKS ===
+        services
+            .AddHealthChecks()
+            .AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
 
         // === IDENTITY API CONFIGURATION ===
         //services.AddIdentityCore<ApplicationUser>(
@@ -148,7 +162,41 @@ public class StartUp
         services.AddScoped<IContosoUniversityService, ContosoUniversityService>();
         services.AddScoped<IWeatherForecastService, WeatherForectastService>();
 
+        // Runtime settings (AppSetting table), used by AppAvailabilityMiddleware
+        services.AddMemoryCache();
+        services.AddScoped<IAppSettingService, AppSettingService>();
+
         #endregion
+    }
+
+    private const string DataProtectionKeysDirectory = "/app/DataProtection-Keys";
+
+    private void AddContainerDataProtection(IServiceCollection services)
+    {
+        var isRunningInContainer = string.Equals(
+            Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"),
+            "true",
+            StringComparison.OrdinalIgnoreCase
+        );
+
+        if (!isRunningInContainer)
+        {
+            return;
+        }
+
+        var applicationName = Configuration["DataProtection:ApplicationName"];
+
+        if (string.IsNullOrWhiteSpace(applicationName))
+        {
+            throw new InvalidOperationException(
+                "DataProtection:ApplicationName is required when running in a container."
+            );
+        }
+
+        services
+            .AddDataProtection()
+            .PersistKeysToFileSystem(new DirectoryInfo(DataProtectionKeysDirectory))
+            .SetApplicationName(applicationName);
     }
 
     // === REQUEST PIPELINE
@@ -188,6 +236,11 @@ public class StartUp
             app.UseHsts();
         }
 
+        // Convert SQL Server connectivity failures into a database-independent
+        // 503 page. Must run before authentication and any middleware that can
+        // access the database.
+        app.UseMiddleware<DatabaseUnavailableMiddleware>();
+
         app.UseStaticFiles();
 
         // Only redirect to HTTPS when NOT running in a container
@@ -197,17 +250,67 @@ public class StartUp
         app.UseRouting();
 
         app.UseAuthentication();
+
+        // Runs after authentication so SuperAdmin users can bypass maintenance.
+        app.UseMiddleware<AppAvailabilityMiddleware>();
+
         app.UseAuthorization();
 
         app.UseRequestLocalization();
 
         app.UseEndpoints(endpoints =>
         {
+            endpoints
+                .MapHealthChecks(
+                    ServiceStatusResponse.LivePath,
+                    new HealthCheckOptions
+                    {
+                        // Liveness runs no checks: it only proves the process responds.
+                        Predicate = _ => false,
+                        ResponseWriter = (context, _) =>
+                            ServiceStatusResponse.WriteLiveHealthAsync(
+                                context,
+                                context.RequestAborted
+                            ),
+                    }
+                )
+                .AllowAnonymous();
+
+            endpoints
+                .MapHealthChecks(
+                    ServiceStatusResponse.ReadyPath,
+                    new HealthCheckOptions
+                    {
+                        Predicate = registration => registration.Tags.Contains("ready"),
+                        ResponseWriter = (context, report) =>
+                            ServiceStatusResponse.WriteReadyHealthAsync(
+                                context,
+                                report.Status,
+                                context.RequestAborted
+                            ),
+                    }
+                )
+                .AllowAnonymous();
+
             endpoints.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}"
             );
         });
+
+        // Skip automatic migration and seeding at EF Core design time
+        // (`dotnet ef`) and in production, where migrations are applied
+        // explicitly as part of the deployment.
+        if (EF.IsDesignTime || env.IsProduction())
+        {
+            loggerFactory
+                .CreateLogger<StartUp>()
+                .LogInformation(
+                    "Skipping automatic database migration and seeding "
+                        + "(design time or production)."
+                );
+            return;
+        }
 
         // Add Contoso University test data to the database
         // Generate identity users with roles

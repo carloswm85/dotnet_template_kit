@@ -4,16 +4,22 @@ using System.Security.Claims;
 using System.Text;
 using Asp.Versioning;
 using CleanArchitectureTemplate.API.Constants;
+using CleanArchitectureTemplate.API.HealthChecks;
+using CleanArchitectureTemplate.API.Middleware;
+using CleanArchitectureTemplate.ApplicationCore.Interfaces;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces.ContosoUniversity;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces.Identity;
 using CleanArchitectureTemplate.Infrastructure.Model;
 using CleanArchitectureTemplate.Infrastructure.Model.Identity;
+using CleanArchitectureTemplate.Infrastructure.Services;
 using CleanArchitectureTemplate.Infrastructure.Services.ContosoServices;
 using CleanArchitectureTemplate.Infrastructure.Services.ExternalServices;
 using CleanArchitectureTemplate.Infrastructure.Services.IdentityServices;
 using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -46,6 +52,19 @@ public class Startup
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString)
         );
+
+        // RFC 7807 problem details for unhandled exceptions. This also enables
+        // the parameterless UseExceptionHandler() used outside Development.
+        services.AddProblemDetails();
+
+        // Data Protection: in a container, persist keys to a mounted volume so
+        // Identity tokens survive restarts and redeploys.
+        AddContainerDataProtection(services);
+
+        // Health checks
+        services
+            .AddHealthChecks()
+            .AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
 
         // Identity endpoints
         services
@@ -169,6 +188,10 @@ public class Startup
         services.AddScoped<IEmailSender, MessagingService>();
         services.AddScoped<ISmsSender, MessagingService>();
 
+        // Runtime settings (AppSetting table), used by AppAvailabilityMiddleware
+        services.AddMemoryCache();
+        services.AddScoped<IAppSettingService, AppSettingService>();
+
         #endregion
 
         services.AddMapster();
@@ -277,6 +300,36 @@ public class Startup
         });
     }
 
+    private const string DataProtectionKeysDirectory = "/app/DataProtection-Keys";
+
+    private void AddContainerDataProtection(IServiceCollection services)
+    {
+        var isRunningInContainer = string.Equals(
+            Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"),
+            "true",
+            StringComparison.OrdinalIgnoreCase
+        );
+
+        if (!isRunningInContainer)
+        {
+            return;
+        }
+
+        var applicationName = Configuration["DataProtection:ApplicationName"];
+
+        if (string.IsNullOrWhiteSpace(applicationName))
+        {
+            throw new InvalidOperationException(
+                "DataProtection:ApplicationName is required when running in a container."
+            );
+        }
+
+        services
+            .AddDataProtection()
+            .PersistKeysToFileSystem(new DirectoryInfo(DataProtectionKeysDirectory))
+            .SetApplicationName(applicationName);
+    }
+
     // ------------------------------------------------------------
     // Middleware pipeline configuration
     // ------------------------------------------------------------
@@ -312,6 +365,12 @@ public class Startup
             app.UseExceptionHandler();
         }
 
+        // Convert SQL Server connectivity failures into a 503 JSON response.
+        // Registered after the exception handlers so it sees these exceptions
+        // first, then short-circuit every request while in maintenance.
+        app.UseMiddleware<DatabaseUnavailableMiddleware>();
+        app.UseMiddleware<AppAvailabilityMiddleware>();
+
         app.UseRouting();
 
         // UseCors must be called before UseResponseCaching
@@ -342,6 +401,49 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
+            endpoints
+                .MapHealthChecks(
+                    ServiceStatusResponse.LivePath,
+                    new HealthCheckOptions
+                    {
+                        // Liveness runs no checks: it only proves the process responds.
+                        Predicate = _ => false,
+                        ResponseWriter = (context, _) =>
+                            ServiceStatusResponse.WriteLiveHealthAsync(
+                                context,
+                                context.RequestAborted
+                            ),
+                    }
+                )
+                .AllowAnonymous();
+
+            endpoints
+                .MapHealthChecks(
+                    ServiceStatusResponse.ReadyPath,
+                    new HealthCheckOptions
+                    {
+                        Predicate = registration => registration.Tags.Contains("ready"),
+                        ResponseWriter = (context, report) =>
+                            ServiceStatusResponse.WriteReadyHealthAsync(
+                                context,
+                                report.Status,
+                                context.RequestAborted
+                            ),
+                    }
+                )
+                .AllowAnonymous();
+
+            endpoints
+                .MapGet(
+                    ServiceStatusResponse.DatabaseUnavailableDiagnosticPath,
+                    context =>
+                        ServiceStatusResponse.WriteDatabaseUnavailableDiagnosticAsync(
+                            context,
+                            context.RequestAborted
+                        )
+                )
+                .AllowAnonymous();
+
             // Standard MVC controller routing (if you have API controllers)
             endpoints.MapControllers();
 
