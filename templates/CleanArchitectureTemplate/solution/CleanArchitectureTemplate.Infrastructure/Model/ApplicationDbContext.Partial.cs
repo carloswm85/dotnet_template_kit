@@ -1,3 +1,4 @@
+using CleanArchitectureTemplate.ApplicationCore.Constants;
 using CleanArchitectureTemplate.ApplicationCore.Entities;
 using CleanArchitectureTemplate.ApplicationCore.Entities.ContosoUniversity;
 using CleanArchitectureTemplate.Infrastructure.Model.Identity;
@@ -30,6 +31,12 @@ public partial class ApplicationDbContext
 
     #endregion
 
+    #region Application settings
+
+    public DbSet<AppSetting> AppSettings { get; set; }
+
+    #endregion
+
     /// <summary>
     /// Example content for the partial class to configure the model.
     ///
@@ -50,6 +57,38 @@ public partial class ApplicationDbContext
 
         #endregion
 
+        #region Application settings
+
+        modelBuilder.Entity<AppSetting>(entity =>
+        {
+            entity.ToTable("AppSetting");
+
+            entity.Property(e => e.Name).IsUnicode(false);
+            entity.Property(e => e.Type).IsUnicode(false);
+            entity.Property(e => e.Category).IsUnicode(false);
+            entity.Property(e => e.Description).IsUnicode(false);
+            entity.Property(e => e.Value).IsUnicode(false);
+            entity.Property(e => e.PreviousValue).IsUnicode(false);
+            entity.Property(e => e.ModificationDate).HasPrecision(1);
+
+            // Seeded through the migration so the row also exists in
+            // production, where DbInitializer does not run.
+            entity.HasData(
+                new AppSetting
+                {
+                    Name = AppSettingConstants.IsAppOnline,
+                    Type = AppSettingConstants.BooleanType,
+                    Category = AppSettingConstants.ApplicationCategory,
+                    IsPrivate = true,
+                    Description =
+                        "Set to false to show the out-of-service page to "
+                        + "everyone except SuperAdmin users.",
+                    Value = "true",
+                }
+            );
+        });
+
+        #endregion
 
         #region Contoso University
 
