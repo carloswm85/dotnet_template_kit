@@ -4,13 +4,17 @@
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 USER $APP_UID
 WORKDIR /app
+# Mount point for persisted Data Protection keys (see docker-compose.yml).
+RUN mkdir -p /app/DataProtection-Keys \
+    && chown "$APP_UID" /app/DataProtection-Keys
 EXPOSE 8080
 EXPOSE 8081
 
 # Environment variables for development.
 # These can be overridden when running the container in production or when running from VS in regular mode (Default when not using the Debug configuration)
 ENV ASPNETCORE_ENVIRONMENT=Development
-ENV ConnectionStrings__DefaultConnection="Server=sqlserver;Database=CleanArchitectureTemplateDb;User Id=sa;Password=YourStrongPassword123!;TrustServerCertificate=True"
+# The connection string is not baked into the image. docker-compose passes it
+# from `.env` (see `.env.example`).
 
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
