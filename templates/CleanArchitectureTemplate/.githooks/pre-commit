@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -uo pipefail
+
+readonly utf8_bom="efbbbf"
+failed=0
+
+while IFS= read -r -d '' path; do
+    index_eol=$(git ls-files --eol -- "$path" | awk '{ print $1 }')
+
+    case "$index_eol" in
+        i/crlf|i/mixed)
+            printf 'error: staged file uses non-LF line endings: %s\n' "$path" >&2
+            failed=1
+            ;;
+    esac
+
+    allow_utf8_bom=$(git check-attr --cached allow-utf8-bom -- "$path")
+
+    if [[ "$index_eol" != "i/-text" && "$allow_utf8_bom" != *": set" ]]; then
+        first_three_bytes=$(git cat-file blob ":$path" | od -An -tx1 -N3 | tr -d '[:space:]')
+
+        if [[ "$first_three_bytes" == "$utf8_bom" ]]; then
+            printf 'error: staged file contains a UTF-8 BOM: %s\n' "$path" >&2
+            failed=1
+        fi
+    fi
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+if ((failed != 0)); then
+    printf '\nCommit rejected. Save text files as UTF-8 without BOM and with LF line endings, then stage them again.\n' >&2
+    exit 1
+fi
+
+exit 0

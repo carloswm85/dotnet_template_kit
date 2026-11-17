@@ -1,4 +1,4 @@
-﻿namespace CleanArchitectureTemplate.ApplicationCore.Common.Pagination;
+namespace CleanArchitectureTemplate.ApplicationCore.Common.Pagination;
 
 public static class CurrentSort
 {

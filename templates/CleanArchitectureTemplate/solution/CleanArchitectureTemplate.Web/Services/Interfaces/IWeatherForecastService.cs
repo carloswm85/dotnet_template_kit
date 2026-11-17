@@ -1,4 +1,4 @@
-﻿using CleanArchitectureTemplate.Web.Models.ViewModels.WeatherForecast;
+using CleanArchitectureTemplate.Web.Models.ViewModels.WeatherForecast;
 
 namespace CleanArchitectureTemplate.Web.Services.Interfaces
 {

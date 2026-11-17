@@ -1,4 +1,4 @@
-﻿using CleanArchitectureTemplate.ApplicationCore.Common.Pagination;
+using CleanArchitectureTemplate.ApplicationCore.Common.Pagination;
 
 namespace CleanArchitectureTemplate.Web.Models;
 

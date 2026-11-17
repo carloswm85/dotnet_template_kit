@@ -1,4 +1,4 @@
-﻿namespace CleanArchitectureTemplate.ApplicationCore.Constants;
+namespace CleanArchitectureTemplate.ApplicationCore.Constants;
 
 public enum Grade
 {

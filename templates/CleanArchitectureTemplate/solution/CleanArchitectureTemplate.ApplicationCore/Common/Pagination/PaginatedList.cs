@@ -1,4 +1,4 @@
-﻿namespace CleanArchitectureTemplate.ApplicationCore.Common.Pagination;
+namespace CleanArchitectureTemplate.ApplicationCore.Common.Pagination;
 
 public class PaginatedList<T> : List<T>
 {

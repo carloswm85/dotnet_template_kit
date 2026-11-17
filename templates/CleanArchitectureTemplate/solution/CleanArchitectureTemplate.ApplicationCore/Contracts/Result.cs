@@ -1,4 +1,4 @@
-﻿namespace CleanArchitectureTemplate.ApplicationCore.Contracts;
+namespace CleanArchitectureTemplate.ApplicationCore.Contracts;
 
 public sealed class Result
 {

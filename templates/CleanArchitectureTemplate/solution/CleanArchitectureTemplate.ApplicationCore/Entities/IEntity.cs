@@ -1,4 +1,4 @@
-﻿namespace CleanArchitectureTemplate.ApplicationCore.Entities;
+namespace CleanArchitectureTemplate.ApplicationCore.Entities;
 
 public interface IEntity<TKey>
 {

@@ -1,4 +1,4 @@
-﻿namespace CleanArchitectureTemplate.Web.Models.ViewModels
+namespace CleanArchitectureTemplate.Web.Models.ViewModels
 {
     public class ErrorViewModel
     {

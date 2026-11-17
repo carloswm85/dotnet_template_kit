@@ -1,0 +1,22 @@
+<!--
+  Shared MSBuild settings for every project under this folder.
+  Project files keep only what is specific to them.
+-->
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+
+    <!--
+      NuGet audit: check direct and transitive packages for known
+      vulnerabilities and fail the build on moderate, high or critical ones
+      (NU1902-NU1904) instead of only warning.
+    -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>moderate</NuGetAuditLevel>
+    <WarningsAsErrors>$(WarningsAsErrors);NU1902;NU1903;NU1904</WarningsAsErrors>
+  </PropertyGroup>
+</Project>

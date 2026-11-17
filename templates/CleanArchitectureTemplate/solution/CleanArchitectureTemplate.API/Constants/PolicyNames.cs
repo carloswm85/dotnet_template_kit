@@ -1,4 +1,4 @@
-﻿namespace CleanArchitectureTemplate.API.Constants;
+namespace CleanArchitectureTemplate.API.Constants;
 
 public static class PolicyNames
 {

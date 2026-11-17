@@ -4,8 +4,19 @@
 ## Get latest from `dotnet new gitattributes`
 
 # Auto detect text files and use LF line endings in the working tree
-* text=auto eol=lf
+# Normalize text as LF in both the Git index and working tree.
+* text=auto eol=lf whitespace=blank-at-eol,blank-at-eof,space-before-tab
 
+# Explicit .NET text formats (LF).
+*.csproj text eol=lf
+*.slnx   text eol=lf
+*.props  text eol=lf
+*.targets text eol=lf
+*.ps1    text eol=lf
+
+# EF Core-generated migrations may contain a UTF-8 BOM (still LF).
+# `allow-utf8-bom` is read by .githooks/pre-commit.
+solution/CleanArchitectureTemplate.Infrastructure/Migrations/** text eol=lf allow-utf8-bom
 #
 # The above will handle all files NOT found below
 #
@@ -66,8 +77,8 @@
 *.sh       text eol=lf
 *.zsh      text eol=lf
 # Likewise, keep cmd and batch scripts consistent with the repository policy
-*.bat      text eol=lf
-*.cmd      text eol=lf
+*.bat      text eol=crlf
+*.cmd      text eol=crlf
 
 # Serialization
 *.json     text

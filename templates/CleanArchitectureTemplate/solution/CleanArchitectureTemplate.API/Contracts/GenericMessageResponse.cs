@@ -1,4 +1,4 @@
-﻿namespace CleanArchitectureTemplate.API.Contracts;
+namespace CleanArchitectureTemplate.API.Contracts;
 
 public sealed class GenericMessageResponse
 {
