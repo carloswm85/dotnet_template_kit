@@ -1,45 +1,7 @@
 using FluentAssertions;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using CleanArchitectureTemplate.Web;
 using Xunit;
-// Alias: the API project also defines a top-level Program class.
-using WebProgram = CleanArchitectureTemplate.Web.Program;
 
 namespace CleanArchitectureTemplate.Tests.Integration.Web;
-
-public sealed class IntegrationWebApplicationFactory : WebApplicationFactory<WebProgram>
-{
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        builder.ConfigureAppConfiguration((_, configuration) =>
-        {
-            configuration.AddInMemoryCollection(
-                new Dictionary<string, string?>
-                {
-                    ["ConnectionStrings:DefaultConnection"] =
-                        "Server=(localdb)\\MSSQLLocalDB;Database=CleanArchitectureTemplateIntegrationTests;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True;",
-                }
-            );
-        });
-        builder.ConfigureLogging(logging =>
-        {
-            logging.ClearProviders();
-            logging.AddConsole();
-        });
-        builder.ConfigureTestServices(services =>
-        {
-            services.RemoveAll<IDataProtectionProvider>();
-            services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider());
-        });
-    }
-}
 
 public class WebEndpointsAvailabilityTests : IClassFixture<IntegrationWebApplicationFactory>
 {
