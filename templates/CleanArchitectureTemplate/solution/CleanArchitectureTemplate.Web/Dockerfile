@@ -4,9 +4,10 @@
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 USER $APP_UID
 WORKDIR /app
-# Mount point for persisted Data Protection keys (see docker-compose.yml).
-RUN mkdir -p /app/DataProtection-Keys \
-    && chown "$APP_UID" /app/DataProtection-Keys
+# Mount points for persisted Data Protection keys and uploaded images
+# (see docker-compose.yml).
+RUN mkdir -p /app/DataProtection-Keys /app/uploads \
+    && chown "$APP_UID" /app/DataProtection-Keys /app/uploads
 EXPOSE 8080
 EXPOSE 8081
 
@@ -20,6 +21,8 @@ ENV ASPNETCORE_ENVIRONMENT=Development
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+# Central package versions and shared build settings are needed for restore.
+COPY ["Directory.Build.props", "Directory.Packages.props", "./"]
 COPY ["solution/CleanArchitectureTemplate.Web/CleanArchitectureTemplate.Web.csproj", "solution/CleanArchitectureTemplate.Web/"]
 COPY ["solution/CleanArchitectureTemplate.Infrastructure/CleanArchitectureTemplate.Infrastructure.csproj", "solution/CleanArchitectureTemplate.Infrastructure/"]
 COPY ["solution/CleanArchitectureTemplate.ApplicationCore/CleanArchitectureTemplate.ApplicationCore.csproj", "solution/CleanArchitectureTemplate.ApplicationCore/"]
@@ -35,6 +38,9 @@ RUN dotnet publish "./CleanArchitectureTemplate.Web.csproj" -c $BUILD_CONFIGURAT
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
+# Commit shown by VersionHelper (passed by CI: --build-arg GIT_COMMIT_HASH=...).
+ARG GIT_COMMIT_HASH=unknown
+ENV GIT_COMMIT_HASH=$GIT_COMMIT_HASH
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "CleanArchitectureTemplate.Web.dll"]

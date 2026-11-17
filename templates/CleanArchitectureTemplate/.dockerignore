@@ -21,6 +21,9 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
+**/appsettings.Development.json
+**/wwwroot/uploads
+**/DataProtection-Keys
 LICENSE
 README.md
 !**/.gitignore

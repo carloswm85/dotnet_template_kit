@@ -427,3 +427,6 @@ FodyWeavers.xsd
 .env.*
 !.env.example
 appsettings.Development.json
+
+# Uploaded images (ImageStorageService default folder)
+**/wwwroot/uploads/

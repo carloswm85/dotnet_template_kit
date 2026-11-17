@@ -1,0 +1,114 @@
+# GitLab CI/CD example. Copy to .gitlab-ci.yml and adjust the variables.
+#
+# Stages:
+#   test   - build the solution and run unit and integration tests
+#            (integration tests start SQL Server with Testcontainers, so the
+#            runner needs Docker: here through the docker:dind service).
+#   build  - build the Web and API images.
+#   push   - push the images to the GitLab Container Registry (manual).
+#   deploy - call a deployment webhook, e.g. Portainer (manual, optional).
+
+variables:
+    # Image tag: branch or tag name, made safe for Docker ("feature/x" -> "feature-x").
+    TAG_NAME: $CI_COMMIT_REF_SLUG
+    WEB_IMAGE: $CI_REGISTRY_IMAGE/web:$TAG_NAME
+    API_IMAGE: $CI_REGISTRY_IMAGE/api:$TAG_NAME
+    # Set these as masked CI/CD variables in the project settings, not here.
+    # DEPLOY_WEBHOOK_URL_MAIN: ""
+    # DEPLOY_WEBHOOK_URL_DEV: ""
+
+stages:
+    - test
+    - build
+    - push
+    - deploy
+
+# STAGE 1: build and test
+test:
+    stage: test
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    services:
+        - name: docker:dind
+          alias: docker
+    variables:
+        DOCKER_HOST: tcp://docker:2375
+        DOCKER_TLS_CERTDIR: ""
+        TESTCONTAINERS_HOST_OVERRIDE: docker
+    script:
+        - dotnet restore CleanArchitectureTemplate.slnx
+        - dotnet build CleanArchitectureTemplate.slnx --no-restore -c Release
+        - dotnet run --no-build -c Release --project solution/tests/CleanArchitectureTemplate.Tests.Unit
+        - dotnet run --no-build -c Release --project solution/tests/CleanArchitectureTemplate.Tests.Integration
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+        - if: $CI_COMMIT_BRANCH
+
+# STAGE 2: Docker image build
+.docker:
+    image: docker:latest
+    services:
+        - docker:dind
+    before_script:
+        - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+
+build_images:
+    extends: .docker
+    stage: build
+    script:
+        - docker build --build-arg GIT_COMMIT_HASH=$CI_COMMIT_SHA -t "$WEB_IMAGE" -f solution/CleanArchitectureTemplate.Web/Dockerfile .
+        - docker build -t "$API_IMAGE" -f solution/CleanArchitectureTemplate.API/Dockerfile .
+        - docker save "$WEB_IMAGE" "$API_IMAGE" -o images.tar
+    artifacts:
+        paths:
+            - images.tar
+        expire_in: 1 day
+    rules:
+        - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "dev"
+
+# STAGE 3: publish to the registry
+push_images:
+    extends: .docker
+    stage: push
+    script:
+        - docker load -i images.tar
+        - docker push "$WEB_IMAGE"
+        - docker push "$API_IMAGE"
+    rules:
+        - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "dev"
+          when: manual
+
+# STAGE 4: trigger the deployment (container update)
+.deploy:
+    stage: deploy
+    image: curlimages/curl:latest
+    script:
+        - test -n "$DEPLOY_WEBHOOK_URL" || (echo "DEPLOY_WEBHOOK_URL is not set" && exit 1)
+        - curl --fail -X POST "$DEPLOY_WEBHOOK_URL"
+
+deploy_main:
+    extends: .deploy
+    variables:
+        DEPLOY_WEBHOOK_URL: $DEPLOY_WEBHOOK_URL_MAIN
+    rules:
+        - if: $CI_COMMIT_BRANCH == "main"
+          when: manual
+
+deploy_dev:
+    extends: .deploy
+    variables:
+        DEPLOY_WEBHOOK_URL: $DEPLOY_WEBHOOK_URL_DEV
+    rules:
+        - if: $CI_COMMIT_BRANCH == "dev"
+          when: manual
+
+# == VARIABLES ==
+#
+# Custom:
+# - TAG_NAME, WEB_IMAGE, API_IMAGE: image names and tags.
+# - DEPLOY_WEBHOOK_URL_MAIN / _DEV: deployment webhooks (masked CI/CD variables).
+#
+# GitLab predefined:
+# - CI_REGISTRY, CI_REGISTRY_IMAGE, CI_REGISTRY_USER, CI_REGISTRY_PASSWORD:
+#   registry host, image path and job-scoped credentials for docker login.
+# - CI_COMMIT_REF_SLUG, CI_COMMIT_SHA: branch slug and commit hash. The hash is
+#   passed to the Web image as GIT_COMMIT_HASH (shown by VersionHelper).

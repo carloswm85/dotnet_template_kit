@@ -64,7 +64,8 @@
                 "**/*.cache",
                 "**/.env",
                 "**/appsettings.Development.json",
-                "**/DataProtection-Keys/**"
+                "**/DataProtection-Keys/**",
+                "**/wwwroot/uploads/**"
             ]
         }
     ],
