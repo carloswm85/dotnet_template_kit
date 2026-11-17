@@ -1,0 +1,25 @@
+@using CleanArchitectureTemplate.Web.Models
+@model MessageModel?
+
+@if (Model?.HasMessage == true)
+{
+    <div class="alert @Model.ToBootstrapClass() alert-dismissible fade show d-flex align-items-center gap-3 shadow-sm"
+         role="alert"
+         aria-live="polite">
+        <i class="bi @Model.ToIconClass() fs-4 flex-shrink-0" aria-hidden="true"></i>
+
+        <div class="flex-grow-1">
+            @if (!string.IsNullOrWhiteSpace(Model.Title))
+            {
+                <h2 class="h5 mb-1">@Model.Title</h2>
+            }
+
+            <div>@Model.Content</div>
+        </div>
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close message"></button>
+    </div>
+}

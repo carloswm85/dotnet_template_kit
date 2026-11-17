@@ -1,0 +1,108 @@
+@inject SignInManager<ApplicationUser> SignInManager
+
+@*
+    Side navigation for signed-in users.
+    - Offcanvas below 992px; on wider screens it can be pinned open (site.js
+      remembers the choice and each section's expanded state).
+    - Opened by the #sidebarToggle button in _Navbar.cshtml.
+*@
+@if (SignInManager.IsSignedIn(User))
+{
+    var canAdministerIdentity =
+        (await AuthorizationService.AuthorizeAsync(User, AuthorizationPolicyNames.IdentityAdministration)).Succeeded;
+
+    <aside class="offcanvas offcanvas-start site-sidebar"
+           id="siteSidebar"
+           tabindex="-1"
+           aria-labelledby="siteSidebarLabel">
+        <div class="offcanvas-header border-bottom">
+            <a class="d-flex align-items-center flex-grow-1 link-body-emphasis text-decoration-none"
+               asp-controller="Home"
+               asp-action="Index">
+                <i class="bi bi-grid-1x2-fill fs-3 me-2" aria-hidden="true"></i>
+                <span class="offcanvas-title sidebar-title" id="siteSidebarLabel">
+                    CleanArchitectureTemplate
+                </span>
+            </a>
+            <button class="btn-close"
+                    type="button"
+                    data-bs-dismiss="offcanvas"
+                    aria-label="Close main menu"></button>
+        </div>
+
+        <div class="offcanvas-body overflow-y-auto">
+            <nav aria-label="Main menu">
+                <ul class="list-unstyled ps-0 mb-0">
+                    <!-- ACCOUNT -->
+                    <li class="mb-1">
+                        <button class="btn btn-toggle rounded border-0"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#sidebarAccount"
+                                aria-controls="sidebarAccount"
+                                aria-expanded="true">
+                            Account
+                        </button>
+                        <div class="collapse show" id="sidebarAccount">
+                            <ul class="btn-toggle-nav list-unstyled small">
+                                <li><a class="link-body-emphasis rounded text-decoration-none" asp-controller="Account" asp-action="UserProfileDetails">My profile</a></li>
+                                <li><a class="link-body-emphasis rounded text-decoration-none" asp-controller="Manage" asp-action="Index">Security settings</a></li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    @if (canAdministerIdentity)
+                    {
+                        <!-- ADMINISTRATION -->
+                        <li class="mb-1">
+                            <button class="btn btn-toggle rounded border-0"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#sidebarAdministration"
+                                    aria-controls="sidebarAdministration"
+                                    aria-expanded="true">
+                                Administration
+                            </button>
+                            <div class="collapse show" id="sidebarAdministration">
+                                <ul class="btn-toggle-nav list-unstyled small">
+                                    <li><a class="link-body-emphasis rounded text-decoration-none" asp-controller="Identity" asp-action="Index">Dashboard</a></li>
+                                    <li><a class="link-body-emphasis rounded text-decoration-none" asp-controller="Identity" asp-action="UserList">Users</a></li>
+                                    <li><a class="link-body-emphasis rounded text-decoration-none" asp-controller="Identity" asp-action="RoleList">Roles</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                    }
+
+                    <!-- EXAMPLES -->
+                    <li class="mb-1">
+                        <button class="btn btn-toggle rounded border-0"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#sidebarExamples"
+                                aria-controls="sidebarExamples"
+                                aria-expanded="true">
+                            Examples
+                        </button>
+                        <div class="collapse show" id="sidebarExamples">
+                            <ul class="btn-toggle-nav list-unstyled small">
+                                <li><a class="link-body-emphasis rounded text-decoration-none" asp-controller="ContosoUniversity" asp-action="List">Students</a></li>
+                                <li><a class="link-body-emphasis rounded text-decoration-none" asp-controller="ContosoUniversity" asp-action="Statistics">Student statistics</a></li>
+                                <li><a class="link-body-emphasis rounded text-decoration-none" asp-controller="TestContact" asp-action="Index">Contacts</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="sidebar-pin-control border-top p-3">
+            <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2 w-100"
+                    id="sidebarPinToggle"
+                    type="button"
+                    aria-pressed="false">
+                <i class="bi bi-pin-angle" data-sidebar-pin-icon aria-hidden="true"></i>
+                <span data-sidebar-pin-label>Pin side menu</span>
+            </button>
+        </div>
+    </aside>
+}

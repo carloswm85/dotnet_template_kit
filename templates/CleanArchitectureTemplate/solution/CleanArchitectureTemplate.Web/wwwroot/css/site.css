@@ -1,35 +1,331 @@
+/* ==========================================================================
+   Base
+   Colors use Bootstrap CSS variables so light and dark themes both work.
+   ========================================================================== */
+
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem var(--bs-body-bg), 0 0 0 0.25rem #258cfb;
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+    text-align: start;
 }
 
 div.alert.alert-danger.validation-summary-errors > ul {
     margin-bottom: 0;
+}
+
+/* Hide the browsers' own password reveal buttons; forms.js adds one. */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-password-toggle-button {
+    visibility: hidden;
+    display: none !important;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   Forms
+   ========================================================================== */
+
+/* Keep labels of disabled checks readable; only the box is dimmed. */
+.form-check-input[disabled] ~ .form-check-label,
+.form-check-input:disabled ~ .form-check-label {
+    opacity: 1;
+}
+
+.form-check-input[disabled],
+.form-check-input:disabled {
+    opacity: 0.5;
+}
+
+.form-check-input {
+    border: 1px solid var(--bs-secondary-color);
+}
+
+/* Server-side validation errors look like Bootstrap's .is-invalid. */
+.input-validation-error {
+    border-color: var(--bs-form-invalid-border-color);
+}
+
+/* ==========================================================================
+   Navigation: nested dropdown submenus (see site.js)
+   ========================================================================== */
+
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu a::after {
+    transform: rotate(-90deg);
+    position: absolute;
+    right: 6px;
+    top: 0.8em;
+}
+
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-left: 0.1rem;
+    margin-right: 0.1rem;
+}
+
+/* ==========================================================================
+   Tables and text overflow
+   ========================================================================== */
+
+.td-ellipsis {
+    max-width: 380px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.td-ellipsis-wrap {
+    max-width: 380px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   Layout and sidebar (Views/Shared/_Sidebar.cshtml, site.js)
+   Offcanvas on small screens; can be pinned open on screens >= 992px.
+   ========================================================================== */
+
+.site-main {
+    min-width: 0;
+}
+
+.site-sidebar {
+    --bs-offcanvas-width: min(320px, 88vw);
+    --bs-offcanvas-bg: var(--bs-tertiary-bg);
+    --bs-offcanvas-border-color: var(--bs-border-color);
+}
+
+.site-sidebar .sidebar-pin-control {
+    display: none;
+    flex-shrink: 0;
+}
+
+.site-sidebar .sidebar-title {
+    font-size: calc(1rem + 2px);
+    line-height: 1.25;
+}
+
+.site-sidebar .btn-toggle {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.375rem 0.5rem;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    background-color: transparent;
+    text-align: left;
+}
+
+.site-sidebar .btn-toggle::before {
+    width: 1.25em;
+    flex: 0 0 1.25em;
+    content: "\203A"; /* single right-pointing angle */
+    font-size: 1.25em;
+    line-height: 1;
+    transition: transform 0.35s ease;
+    transform-origin: 0.35em 50%;
+}
+
+.site-sidebar .btn-toggle[aria-expanded="true"]::before {
+    transform: rotate(90deg);
+}
+
+.site-sidebar .btn-toggle:hover,
+.site-sidebar .btn-toggle:focus {
+    background-color: var(--bs-secondary-bg);
+}
+
+.site-sidebar .btn-toggle-nav a {
+    display: block;
+    width: calc(100% - 1.25rem);
+    margin-top: 0.125rem;
+    margin-left: 1.25rem;
+    padding: 0.25rem 0.5rem;
+    white-space: normal;
+}
+
+.site-sidebar .btn-toggle-nav a:hover,
+.site-sidebar .btn-toggle-nav a:focus {
+    background-color: var(--bs-secondary-bg);
+}
+
+.site-sidebar .btn-toggle-nav a.active {
+    font-weight: 600;
+    background-color: var(--bs-primary-bg-subtle);
+}
+
+@media (min-width: 992px) {
+    .site-sidebar .sidebar-pin-control {
+        display: block;
+    }
+
+    html.sidebar-pinned .site-sidebar {
+        position: relative;
+        inset: auto;
+        width: var(--bs-offcanvas-width);
+        height: auto;
+        min-height: 100%;
+        flex: 0 0 var(--bs-offcanvas-width);
+        visibility: visible !important;
+        transform: none !important;
+        transition: none;
+        z-index: auto;
+    }
+
+    html.sidebar-pinned .site-sidebar .btn-close,
+    html.sidebar-pinned #sidebarToggle {
+        display: none;
+    }
+}
+
+/* ==========================================================================
+   Dashboard shortcuts (Views/Identity/Index.cshtml)
+   ========================================================================== */
+
+.home-shortcuts {
+    max-width: 72rem;
+    margin: 1rem auto;
+}
+
+.home-shortcuts__heading {
+    margin: 1.5rem 0 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--bs-emphasis-color);
+}
+
+.home-shortcuts__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0.625rem;
+}
+
+.home-shortcut {
+    display: flex;
+    align-items: center;
+    min-height: 4.75rem;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: var(--bs-border-radius);
+    box-shadow: var(--bs-box-shadow-sm);
+    color: #fff;
+    text-decoration: none;
+    transition: filter 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+
+.home-shortcut:hover,
+.home-shortcut:focus-visible {
+    color: #fff;
+    filter: brightness(0.92);
+    transform: translateY(-1px);
+}
+
+.home-shortcut.disabled {
+    pointer-events: none;
+    cursor: not-allowed;
+    filter: grayscale(0.6);
+    opacity: 0.65;
+}
+
+.home-shortcut__icon {
+    flex: 0 0 auto;
+    margin-right: 1rem;
+    font-size: 2.75rem;
+    line-height: 1;
+}
+
+.home-shortcut__content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: end;
+    text-align: right;
+}
+
+.home-shortcut__title {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.home-shortcut__detail {
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Color variants: white text on each background meets WCAG AA contrast. */
+.home-shortcut--request {
+    background-color: #1f5f99;
+}
+
+.home-shortcut--use {
+    background-color: #2e7d32;
+}
+
+.home-shortcut--operations {
+    background-color: #0f766e;
+}
+
+.home-shortcut--administration {
+    background-color: #5b4b8a;
+}
+
+.home-shortcut--identity {
+    background-color: #475569;
+}
+
+.home-shortcut--home {
+    background-color: #334155;
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+.totally-centered {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
 }

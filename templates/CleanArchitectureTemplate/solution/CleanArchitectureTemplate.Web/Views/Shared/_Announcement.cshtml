@@ -1,0 +1,67 @@
+@using CleanArchitectureTemplate.ApplicationCore.Constants
+@using CleanArchitectureTemplate.ApplicationCore.Interfaces
+@using CleanArchitectureTemplate.Web.Tools
+@using Microsoft.Extensions.Hosting
+
+@inject IWebHostEnvironment HostEnvironment
+@inject IAppSettingService AppSettings
+@inject IConfiguration Configuration
+
+@*
+    Top-of-page banners:
+    - Environment banner outside Production, with the database name and build,
+      so testers never confuse environments.
+    - Announcement from the AppSetting row "AnnouncementMessage" (empty = hidden).
+*@
+@{
+    string? announcement = null;
+    try
+    {
+        announcement = AppSettings.GetSingle(AppSettingConstants.AnnouncementMessage).Value;
+    }
+    catch
+    {
+        // The banner must never break the page (for example, during a database outage).
+    }
+
+    if (announcement == AppSettingConstants.ErrorValue)
+    {
+        announcement = null;
+    }
+
+    string? databaseName = null;
+    var connectionString = Configuration.GetConnectionString("DefaultConnection");
+    if (!string.IsNullOrWhiteSpace(connectionString))
+    {
+        try
+        {
+            databaseName = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connectionString)
+                .InitialCatalog;
+        }
+        catch (ArgumentException)
+        {
+            databaseName = null;
+        }
+    }
+}
+
+@if (!HostEnvironment.IsProduction())
+{
+    <div class="text-center small py-1 @(HostEnvironment.IsDevelopment() ? "text-bg-info" : "text-bg-warning")"
+         role="status">
+        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+        Environment: <b>@HostEnvironment.EnvironmentName</b>
+        @if (!string.IsNullOrWhiteSpace(databaseName))
+        {
+            <span> · Database: <b>@databaseName</b></span>
+        }
+        <span> · Build: @VersionHelper.GetBannerVersion()</span>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(announcement))
+{
+    <div class="text-center py-2 text-bg-primary" role="status">
+        <i class="bi bi-megaphone-fill me-2" aria-hidden="true"></i>@announcement
+    </div>
+}

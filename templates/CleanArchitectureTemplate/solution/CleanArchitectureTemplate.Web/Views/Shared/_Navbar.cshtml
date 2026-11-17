@@ -1,6 +1,20 @@
-﻿<!-- NAVIGATION BAR -->
+<!-- NAVIGATION BAR -->
 <nav class="navbar navbar-expand-lg navbar-light bg-body shadow-sm">
     <div class="container-lg">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <!-- SIDEBAR TOGGLE (see _Sidebar.cshtml) -->
+            <button class="btn btn-outline-secondary me-3"
+                    id="sidebarToggle"
+                    type="button"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#siteSidebar"
+                    aria-controls="siteSidebar"
+                    aria-label="Toggle main menu">
+                <i class="bi bi-layout-sidebar" aria-hidden="true"></i>
+            </button>
+        }
+
         <!-- BRAND -->
         <a class="navbar-brand fw-semibold text-primary" asp-controller="Home" asp-action="Index">
             CleanArchitectureTemplate

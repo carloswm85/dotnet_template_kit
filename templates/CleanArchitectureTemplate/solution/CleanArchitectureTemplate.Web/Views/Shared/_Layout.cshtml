@@ -1,9 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-bs-theme="auto">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CleanArchitectureTemplate.Web</title>
+    <title>@ViewData["Title"] - CleanArchitectureTemplate</title>
+
+    <link rel="icon" href="~/favicon.ico" sizes="any" />
 
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
@@ -14,14 +16,21 @@
     @await RenderSectionAsync("Styles", required: false)
 
     <header class="sticky-top bg-body shadow-sm border-bottom">
+        @await Html.PartialAsync("_Announcement")
         @await Html.PartialAsync("_Navbar")
     </header>
     
-    <main class="flex-grow-1 py-4">
-        <div class="container-lg">
-            @RenderBody()
-        </div>
-    </main>
+    <div class="site-content d-flex flex-grow-1">
+        @await Html.PartialAsync("_Sidebar")
+
+        <main class="site-main flex-grow-1 py-4">
+            <div class="container-lg">
+                @* Flash message set with TempData.SetMessage(...) before a redirect *@
+                @await Html.PartialAsync("_Message", TempData.GetMessage())
+                @RenderBody()
+            </div>
+        </main>
+    </div>
     
     <footer class="mt-auto bg-body-secondary border-top py-4">
         <div class="container-lg">
@@ -32,9 +41,10 @@
     </footer>
 
     <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/jquery.blockUI/jquery.blockUI.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
-    
-    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script type="module" src="~/js/site.js" asp-append-version="true"></script>
     
     @await RenderSectionAsync("Scripts", required: false)
 </body>
