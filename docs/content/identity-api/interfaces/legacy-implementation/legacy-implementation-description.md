@@ -12,7 +12,7 @@
 
 # Data Contract Classes
 
-- Old implementation used in project `MiningTracker`, NET Framework 4.7.x
+- Old implementation used in a legacy .NET Framework 4.7.x project
 - Auto-generated WCF service reference code and extract the methods and properties.
 
 ## `ExchangeDataCompany`
