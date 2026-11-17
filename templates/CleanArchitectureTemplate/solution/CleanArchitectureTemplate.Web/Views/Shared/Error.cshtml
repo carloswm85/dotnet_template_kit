@@ -1,28 +1,59 @@
-﻿@using CleanArchitectureTemplate.Web.Models.ViewModels
-
-@model ErrorViewModel
-
 @{
-    ViewData["Title"] = "Error";
+    ViewData["Title"] = ViewBag.ErrorTitle ?? "Error";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="container py-4 py-md-5">
+    <div class="row justify-content-center align-items-center min-vh-75">
+        <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header border-0 bg-danger text-white text-center py-4">
+                    <i class="bi bi-exclamation-triangle-fill display-4"></i>
+                </div>
 
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+                <div class="card-body text-center p-4 p-md-5">
+                    <h1 class="display-5 fw-bold text-danger mb-2">
+                        @ViewBag.ErrorTitle
+                    </h1>
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+                    <p class="h5 text-body-secondary fw-normal mb-3">
+                        @ViewBag.Subtitle
+                    </p>
+
+                    <p class="lead text-body-secondary mb-3 text-break">
+                        @ViewBag.ErrorMessage
+                    </p>
+
+                    @if (!string.IsNullOrWhiteSpace(ViewBag.ErrorDetail as string))
+                    {
+                        <div class="alert alert-light border text-start text-break mb-4 text-center"
+                             role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            @ViewBag.ErrorDetail
+                        </div>
+                    }
+
+                    <!-- BUTTONS -->
+                    <div class="d-grid d-sm-flex justify-content-sm-center">
+                        <a asp-controller="Home"
+                           asp-action="Index"
+                           class="btn btn-primary btn-lg px-4">
+                            <i class="bi bi-house-door-fill me-2"></i>
+                            Go to home
+                        </a>
+                    </div>
+                </div>
+
+                @if (ViewBag.ErrorId != null)
+                {
+                    <div class="card-footer border-0 bg-body-tertiary text-center py-3">
+                        <small class="text-body-secondary">
+                            <i class="bi bi-fingerprint me-1"></i>
+                            Error ID:
+                            <code>@ViewBag.ErrorId</code>
+                        </small>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using CleanArchitectureTemplate.ApplicationCore.Common.Pagination;
 using CleanArchitectureTemplate.ApplicationCore.Dtos.ContosoUniversity;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces;
-using CleanArchitectureTemplate.Infrastructure.Model;
+using CleanArchitectureTemplate.Infrastructure.Models;
 
 namespace CleanArchitectureTemplate.Infrastructure.Services;
 

@@ -1,0 +1,140 @@
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account
+
+@model UserProfileViewModel
+
+@{
+    ViewData["Title"] = "Edit profile";
+
+    var profileImagePath = string.IsNullOrWhiteSpace(Model.ImagePath)
+        ? Url.Content("~/images/defaults/default-person.png")
+        : Url.Content(Model.ImagePath);
+    var registrationDate = Model.RegistrationDate?.ToString("dd/MM/yyyy") ?? "Not provided";
+}
+
+<div class="container py-4">
+    <div class="card mx-auto">
+        <div class="card-header p-4 p-md-5">
+            <div class="row g-4 align-items-center">
+                <div class="col-12 col-md-auto text-center">
+                    @*
+                    <img id="previewImage"
+                         src="@profileImagePath"
+                         alt="@Html.DisplayNameFor(model => model.ImagePath) of @Model.FullName"
+                         class="img-thumbnail rounded-circle"
+                         width="144"
+                         height="144"
+                         onerror="this.onerror=null; this.src='@Url.Content("~/images/defaults/error-image.png")';" />
+                    *@
+                </div>
+
+                <div class="col text-center text-md-start">
+                    <p class="text-uppercase small fw-semibold mb-1 opacity-75">@ViewData["Title"]</p>
+                    <h1 class="h2 mb-2">@Model.FullName</h1>
+                    <p class="mb-0">
+                        <i class="bi bi-calendar3 me-2" aria-hidden="true"></i>
+                        @Html.DisplayNameFor(model => model.RegistrationDate): @registrationDate
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <form asp-controller="Account"
+              asp-action="UserProfileEdit"
+              asp-route-id="@Model.Id"
+              method="post"
+              enctype="multipart/form-data">
+            <div class="card-body p-4 p-md-5">
+                <div asp-validation-summary="ModelOnly"
+                    class="alert alert-danger"
+                    role="alert"></div>
+
+                <!-- HIDDEN_FIELDS -->
+                <input asp-for="Id" type="hidden" />
+                <input asp-for="ImagePath" type="hidden" />
+                <input asp-for="RegistrationDate" type="hidden" />
+
+                <div class="row g-4">
+
+                    <!-- IMAGE -->
+                    <!-- Stored by ImageStorageService (Uploads:RootPath) -->
+                    <div class="col-12">
+                        <label asp-for="Image" class="form-label"></label>
+                        <input asp-for="Image"
+                               type="file"
+                               class="form-control"
+                               accept="image/*"
+                               onchange="previewFile(event)" />
+                        <span asp-validation-for="Image" class="text-danger"></span>
+                    </div>
+
+                    <!-- FIRST_NAME -->
+                    <div class="col-12 col-md-6">
+                        <label asp-for="FirstName" class="form-label"></label>
+                        <input asp-for="FirstName" class="form-control" autocomplete="given-name" />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+
+                    <!-- LAST_NAME -->
+                    <div class="col-12 col-md-6">
+                        <label asp-for="LastName" class="form-label"></label>
+                        <input asp-for="LastName" class="form-control" autocomplete="family-name" />
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+
+                    <!-- EMAIL -->
+                    <div class="col-12 col-md-6">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control disabled" type="email" />
+                    </div>
+
+                    <!-- PHONE_NUMBER -->
+                    <div class="col-12 col-md-6">
+                        <label asp-for="PhoneNumber" class="form-label"></label>
+                        <input asp-for="PhoneNumber"
+                           class="form-control"
+                           type="tel"
+                           autocomplete="tel"/>
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+
+                    <!-- CITY -->
+                    <div class="col-12 col-md-6">
+                        <label asp-for="City" class="form-label"></label>
+                        <input asp-for="City" class="form-control" autocomplete="address-level2" />
+                        <span asp-validation-for="City" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer p-3 p-md-4">
+
+                <!-- BUTTONS -->
+                <div class="d-flex flex-column flex-md-row gap-2">
+                    <a asp-controller="Account"
+                       asp-action="UserProfileDetails"
+                       class="btn btn-lg btn-outline-secondary flex-grow-1">
+                        <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-lg btn-primary flex-grow-1">
+                        <i class="bi bi-save me-2" aria-hidden="true"></i>Save changes
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function previewFile(event) {
+            const input = event.target;
+            const preview = document.getElementById("previewImage");
+
+            if (input.files && input.files[0]) {
+                preview.src = URL.createObjectURL(input.files[0]);
+            }
+        }
+    </script>
+}

@@ -1,20 +1,19 @@
-﻿@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Manage
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Manage
 
 @model VerifyPhoneNumberViewModel
 
 @{
-    ViewData["Title"] = "Verify Phone Number";
+    ViewData["Title"] = "Verify phone number";
 }
 
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-6 col-md-8">
+<div class="card col-12 col-lg-9 mx-auto my-3">
+    <div class="card-header pb-3">
+        <h3 class="fw-normal my-3">
+            <i class="bi bi-phone me-2"></i>@ViewData["Title"]
+        </h3>
+    </div>
 
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-
-                    <h1 class="h3 mb-3">@ViewData["Title"]</h1>
-
+    <div class="card-body">
                     <p class="text-muted">
                         Enter the verification code sent to your phone number.
                     </p>
@@ -31,6 +30,7 @@
                           asp-route-returnurl="@ViewData["ReturnUrl"]"
                           method="post">
 
+                        <!-- HIDDEN_FIELDS -->
                         <input asp-for="PhoneNumber" type="hidden" />
 
                         <div asp-validation-summary="ModelOnly"
@@ -38,6 +38,7 @@
                              role="alert">
                         </div>
 
+                        <!-- CODE -->
                         <div class="mb-3">
                             <label asp-for="Code" class="form-label"></label>
 
@@ -50,19 +51,16 @@
                             </span>
                         </div>
 
-                        <div class="d-grid">
+                        <!-- BUTTONS -->
+                        <div class="d-grid pt-2">
                             <button type="submit"
-                                    class="btn btn-primary">
-                                Verify Phone Number
+                                    class="btn btn-lg btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Verify phone number
                             </button>
                         </div>
 
                     </form>
 
-                </div>
-            </div>
-
-        </div>
     </div>
 </div>
 

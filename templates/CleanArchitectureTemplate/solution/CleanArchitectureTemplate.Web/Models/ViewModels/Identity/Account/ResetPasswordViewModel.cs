@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 public class ResetPasswordViewModel
 {
     [Required]
     [EmailAddress]
+    [Display(Name = "Email")]
     public string Email { get; set; } = default!;
 
     [Required]
@@ -13,6 +14,7 @@ public class ResetPasswordViewModel
         MinimumLength = 6
     )]
     [DataType(DataType.Password)]
+    [Display(Name = "Password")]
     public string Password { get; set; } = default!;
 
     [DataType(DataType.Password)]
@@ -21,5 +23,6 @@ public class ResetPasswordViewModel
     public string ConfirmPassword { get; set; } = default!;
 
     [Required]
+    [Display(Name = "Code")]
     public string Code { get; set; } = default!;
 }

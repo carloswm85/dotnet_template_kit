@@ -1,6 +1,6 @@
 @inject SignInManager<ApplicationUser> SignInManager
 
-@if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+@if (SignInManager.IsSignedIn(User) && User.IsInRole(RoleNames.Admin))
 {
     <!-- CONTOSO -->
     <li class="nav-item dropdown me-md-1">

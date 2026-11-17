@@ -1,4 +1,4 @@
-﻿@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account
 
 @model RegisterViewModel
 
@@ -6,7 +6,7 @@
     ViewData["Title"] = "Register";
 }
 
-<div class="container">
+<div class="container my-lg-4">
     <div class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-6">
             <div class="card shadow-sm">
@@ -20,18 +20,11 @@
                           method="post"
                           id="registerForm"
                           novalidate >
-
                         <hr />
 
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                        <div class="mb-3">
-                            <label asp-for="Username" class="form-label"></label>
-                            <input asp-for="Username"
-                                   class="form-control" />
-                            <span asp-validation-for="Username" class="text-danger"></span>
-                        </div>
-
+                        <!-- EMAIL -->
                         <div class="mb-3">
                             <label asp-for="Email" class="form-label"></label>
                             <input asp-for="Email"
@@ -40,6 +33,7 @@
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
 
+                        <!-- FIRST_NAME -->
                         <div class="mb-3">
                             <label asp-for="FirstName" class="form-label"></label>
                             <input asp-for="FirstName"
@@ -47,6 +41,7 @@
                             <span asp-validation-for="FirstName" class="text-danger"></span>
                         </div>
 
+                        <!-- LAST_NAME -->
                         <div class="mb-3">
                             <label asp-for="LastName" class="form-label"></label>
                             <input asp-for="LastName"
@@ -54,23 +49,60 @@
                             <span asp-validation-for="LastName" class="text-danger"></span>
                         </div>
 
-
-
                         <div class="mb-3">
-                            <label asp-for="Password" class="form-label"></label>
-                            <input asp-for="Password"
-                                   class="form-control"
-                                   autocomplete="new-password"
-                                   id="passwordInput" />
-                            <span asp-validation-for="Password" class="text-danger"></span>
+                            <label asp-for="Password"
+                                   class="form-label"></label>
+
+                            <!-- PASSWORD -->
+                            <div class="input-group">
+                                <input asp-for="Password"
+                                       id="passwordInput"
+                                       type="password"
+                                       class="form-control"
+                                       autocomplete="new-password" />
+
+                                <!-- BUTTONS -->
+                                <button class="btn btn-outline-secondary"
+                                        type="button"
+                                        data-password-toggle
+                                        data-target="#passwordInput"
+                                        aria-label="Show password">
+
+                                    <i class="bi bi-eye"></i>
+                                </button>
+
+                            </div>
+
+                            <span asp-validation-for="Password"
+                                  class="text-danger"></span>
                         </div>
 
                         <div class="mb-4">
-                            <label asp-for="ConfirmPassword" class="form-label"></label>
-                            <input asp-for="ConfirmPassword"
-                                   class="form-control"
-                                   autocomplete="new-password" />
-                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            <label asp-for="ConfirmPassword"
+                                   class="form-label"></label>
+
+                            <!-- CONFIRM_PASSWORD -->
+                            <!-- BUTTONS -->
+                            <div class="input-group">
+                                <input asp-for="ConfirmPassword"
+                                       id="confirmPasswordInput"
+                                       type="password"
+                                       class="form-control"
+                                       autocomplete="new-password" />
+
+                                <button class="btn btn-outline-secondary"
+                                        type="button"
+                                        data-password-toggle
+                                        data-target="#confirmPasswordInput"
+                                        aria-label="Show password">
+
+                                    <i class="bi bi-eye"></i>
+
+                                </button>
+                            </div>
+
+                            <span asp-validation-for="ConfirmPassword"
+                                  class="text-danger"></span>
                         </div>
 
                         <hr />
@@ -91,4 +123,6 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script type="module" src="~/js/forms.js"></script>
 }

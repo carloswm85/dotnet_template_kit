@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using CleanArchitectureTemplate.ApplicationCore.Constants;
 using CleanArchitectureTemplate.ApplicationCore.Entities;
-using CleanArchitectureTemplate.Infrastructure.Model.Identity;
+using CleanArchitectureTemplate.Infrastructure.Models.Identity;
 
 namespace CleanArchitectureTemplate.Infrastructure.Authorization.TestContactAuthorization;
 

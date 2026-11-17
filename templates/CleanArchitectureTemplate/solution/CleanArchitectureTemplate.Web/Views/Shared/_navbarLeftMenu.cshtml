@@ -7,7 +7,7 @@
 
     @await Html.PartialAsync("_NavbarContoso")
 
-    @if (User.IsInRole("Admin"))
+    @if ((await AuthorizationService.AuthorizeAsync(User, AuthorizationPolicyNames.IdentityAdministration)).Succeeded)
     {
         @await Html.PartialAsync("_navbarAdminPartial")
     }

@@ -1,0 +1,140 @@
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Identity
+
+@model UserRolesEditViewModel
+
+@{
+    ViewData["Title"] = "Edit user roles";
+}
+
+<div class="card col-12 col-xl-10 mx-auto my-3">
+    <div class="card-header pb-3">
+        <h3 class="fw-normal my-3">
+            <i class="bi bi-person-gear me-2"></i>@ViewData["Title"]
+        </h3>
+    </div>
+
+    <div class="card-body">
+
+            <form asp-action="UserRolesEdit" method="post">
+                <!-- HIDDEN_FIELDS -->
+                <input type="hidden" asp-for="UserId" />
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person-badge me-2"></i>User information
+                        </h5>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <div class="text-muted small">Full name</div>
+                                <div class="fw-semibold">
+                                    @Model.FullName
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="text-muted small">Username</div>
+                                <div class="fw-semibold">
+                                    @Model.UserName
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="text-muted small">Email</div>
+                                <div class="fw-semibold">
+                                    @Model.Email
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-shield-lock me-2"></i>Assigned roles
+                        </h5>
+                    </div>
+
+                    @*
+                        User: basic access for end-users
+                        Manager: team oversight and reporting
+                        Admin: system configuration and user management
+                        SuperAdmin: full system control and critical operations
+                    *@
+
+                    <div class="card-body">
+                        <div class="alert alert-info" role="status">
+                            <i class="bi bi-info-circle me-2"></i>
+                            The User role is the base role of every account and cannot
+                            be removed.
+                        </div>
+
+                        <div class="row g-3">
+                            @for (int i = 0; i < Model.Roles.Count; i++)
+                            {
+                                <div class="col-md-6 col-lg-4">
+
+                                    <div class="form-check form-switch">
+                                        @if (Model.Roles[i].IsRequired)
+                                        {
+                                            <input type="hidden"
+                                                   asp-for="Roles[i].IsAssigned"
+                                                   value="true" />
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   role="switch"
+                                                   checked
+                                                   disabled
+                                                   aria-disabled="true" />
+                                        }
+                                        else
+                                        {
+                                            <input asp-for="Roles[i].IsAssigned"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   role="switch" />
+                                        }
+
+                                        <label class="form-check-label fw-semibold">
+                                            @Model.Roles[i].RoleName
+                                            @if (Model.Roles[i].IsRequired)
+                                            {
+                                                <span class="badge text-bg-secondary ms-1">
+                                                    Base role
+                                                </span>
+                                            }
+                                        </label>
+
+                                        <input type="hidden" asp-for="Roles[i].RoleId" />
+                                        <input type="hidden" asp-for="Roles[i].RoleName" />
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BUTTONS -->
+                <div class="d-flex flex-column flex-lg-row gap-2 mt-4">
+                    <a asp-action="UserList" class="btn btn-lg btn-outline-secondary flex-grow-1">
+                        <i class="bi bi-arrow-left"></i> Back to the user list
+                    </a>
+
+                    <a asp-action="UserDetails" asp-route-id="@Model.UserId"
+                        class="btn btn-lg btn-outline-secondary flex-grow-1" target="_blank">
+                        <i class="bi bi-box-arrow-in-up-right" aria-hidden="true"></i> View user details
+                    </a>
+
+                    <button type="submit" class="btn btn-lg btn-primary flex-grow-1">
+                        <i class="bi bi-save me-1"></i> Save changes
+                    </button>
+                </div>
+            </form>
+    </div>
+</div>

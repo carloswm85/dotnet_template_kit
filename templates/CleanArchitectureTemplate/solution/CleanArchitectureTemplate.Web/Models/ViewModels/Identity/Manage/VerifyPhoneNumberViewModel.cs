@@ -8,6 +8,7 @@ namespace CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Manage;
 public class VerifyPhoneNumberViewModel
 {
     [Required]
+    [Display(Name = "Code")]
     public string Code { get; set; } = default!;
 
     [Required]

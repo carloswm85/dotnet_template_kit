@@ -1,12 +1,19 @@
-﻿@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Manage
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Manage
 
 @model ManageLoginsViewModel
 
 @{
-    ViewData["Title"] = "Manage your external logins";
+    ViewData["Title"] = "Manage external logins";
 }
 
-<h1 class="mb-4">@ViewData["Title"]</h1>
+<div class="card my-3">
+    <div class="card-header pb-3">
+        <h3 class="fw-normal my-3">
+            <i class="bi bi-box-arrow-in-right me-2"></i>@ViewData["Title"]
+        </h3>
+    </div>
+
+    <div class="card-body">
 
 @if (!string.IsNullOrEmpty(ViewData["StatusMessage"] as string))
 {
@@ -24,7 +31,7 @@
 
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table mb-0 align-middle">
+                <table class="table table-striped table-hover mb-0 align-middle">
                     <tbody>
                         @for (var index = 0; index < Model.CurrentLogins.Count; index++)
                         {
@@ -40,6 +47,7 @@
                                               method="post"
                                               class="d-inline">
 
+                                            <!-- HIDDEN_FIELDS -->
                                             <input type="hidden"
                                                    name="LoginProvider"
                                                    value="@Model.CurrentLogins[index].LoginProvider" />
@@ -72,10 +80,10 @@ else
                 <i class="bi bi-info-circle fs-5"></i>
                 <div>
                     <p class="mb-1 fw-bolder">
-                        You haven’t linked any external login providers yet.
+                        You have not linked any external login provider yet.
                     </p>
                     <small>
-                        External logins let you sign in faster using trusted third-party services.
+                        External logins let you sign in faster through trusted third-party services.
                     </small>
                 </div>
             </div>
@@ -97,14 +105,15 @@ else
                   asp-action="LinkLogin"
                   method="post">
 
-                <div class="d-flex flex-wrap gap-2">
+                <!-- BUTTONS -->
+                <div class="d-flex flex-column flex-md-row flex-wrap gap-2">
                     @foreach (var provider in Model.OtherLogins)
                     {
                         <button type="submit"
-                                class="btn btn-outline-secondary"
+                                class="btn btn-lg btn-outline-secondary flex-grow-1"
                                 name="provider"
                                 value="@provider.Name"
-                                title="Sign in using your @provider.DisplayName account">
+                                title="Log in using your @provider.DisplayName account">
                             @provider.DisplayName
                         </button>
                     }
@@ -121,7 +130,7 @@ else
                 <i class="bi bi-info-circle fs-5"></i>
                 <div>
                     <p class="mb-1 fw-bolder">
-                        There are no additional external login providers available to add.
+                        There are no additional external login providers to add.
                     </p>
                     <small>
                         All supported external providers are already linked to your account.
@@ -131,3 +140,6 @@ else
         </div>
     </div>
 }
+
+    </div>
+</div>

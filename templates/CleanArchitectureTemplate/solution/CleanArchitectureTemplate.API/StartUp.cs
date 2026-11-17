@@ -1,25 +1,30 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 using Asp.Versioning;
 using CleanArchitectureTemplate.API.Constants;
 using CleanArchitectureTemplate.API.HealthChecks;
 using CleanArchitectureTemplate.API.Middleware;
+using CleanArchitectureTemplate.ApplicationCore.Constants;
+using CleanArchitectureTemplate.ApplicationCore.Extensions;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces.ContosoUniversity;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces.Identity;
-using CleanArchitectureTemplate.Infrastructure.Model;
-using CleanArchitectureTemplate.Infrastructure.Model.Identity;
+using CleanArchitectureTemplate.Infrastructure.Models;
+using CleanArchitectureTemplate.Infrastructure.Models.Identity;
 using CleanArchitectureTemplate.Infrastructure.Services;
-using CleanArchitectureTemplate.Infrastructure.Services.ContosoServices;
-using CleanArchitectureTemplate.Infrastructure.Services.ExternalServices;
-using CleanArchitectureTemplate.Infrastructure.Services.IdentityServices;
+using CleanArchitectureTemplate.Infrastructure.Services.ContosoUniversity;
+using CleanArchitectureTemplate.Infrastructure.Services.External;
+using CleanArchitectureTemplate.Infrastructure.Services.Identity;
 using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -41,6 +46,8 @@ public class Startup
     // ------------------------------------------------------------
     public void ConfigureServices(IServiceCollection services)
     {
+        #region Database, errors and hosting
+
         // Connection string validation (fail fast)
         var connectionString =
             Configuration.GetConnectionString("DefaultConnection")
@@ -66,6 +73,14 @@ public class Startup
             .AddHealthChecks()
             .AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
 
+        // Reverse proxy support and rate limiting for authentication endpoints
+        AddForwardedHeaders(services);
+        AddRateLimiting(services);
+
+        #endregion
+
+        #region Identity
+
         // Identity endpoints
         services
             .AddIdentityApiEndpoints<ApplicationUser>(options =>
@@ -74,6 +89,8 @@ public class Startup
             })
             .AddRoles<ApplicationRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        #endregion
 
         #region Authentication and Authorization
 
@@ -87,14 +104,41 @@ public class Startup
             options.DefaultPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .Build();
+
+            options.AddApplicationPolicies();
         });
 
-        // JWT Authentication
+        // JWT Authentication: fail fast on missing or weak settings
         var jwtSettings = Configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"];
+        var issuer = jwtSettings["Issuer"];
+        var audience = jwtSettings["Audience"];
 
-        if (string.IsNullOrEmpty(secretKey))
+        if (string.IsNullOrWhiteSpace(secretKey))
             throw new InvalidOperationException("JWT SecretKey is not configured.");
+        if (Encoding.UTF8.GetByteCount(secretKey) < 32)
+            throw new InvalidOperationException("JWT SecretKey must be at least 32 bytes.");
+        if (string.IsNullOrWhiteSpace(issuer))
+            throw new InvalidOperationException("JWT Issuer is not configured.");
+        if (string.IsNullOrWhiteSpace(audience))
+            throw new InvalidOperationException("JWT Audience is not configured.");
+        if (
+            !double.TryParse(jwtSettings["ExpirationMinutes"], out var expirationMinutes)
+            || expirationMinutes <= 0
+        )
+            throw new InvalidOperationException(
+                "JWT ExpirationMinutes must be greater than zero."
+            );
+        if (
+            !double.TryParse(
+                jwtSettings["RefreshTokenLifetimeMinutes"],
+                out var refreshTokenLifetimeMinutes
+            )
+            || refreshTokenLifetimeMinutes <= 0
+        )
+            throw new InvalidOperationException(
+                "JWT RefreshTokenLifetimeMinutes must be greater than zero."
+            );
 
         // Configure authentication services and define the default scheme
         services
@@ -131,8 +175,9 @@ public class Startup
                     ValidateAudience = true, // Ensures the token is intended for this specific audience (your API)
                     ValidateLifetime = true, // Ensures the token has not expired
 
-                    ValidIssuer = jwtSettings["Issuer"], // Expected issuer value (must match token's "iss" claim)
-                    ValidAudience = jwtSettings["Audience"], // Expected audience value (must match token's "aud" claim)
+                    ValidIssuer = issuer, // Expected issuer value (must match token's "iss" claim)
+                    ValidAudience = audience, // Expected audience value (must match token's "aud" claim)
+                    ClockSkew = TimeSpan.Zero, // Expire exactly at "exp" (default allows 5 extra minutes)
                     NameClaimType = ClaimTypes.NameIdentifier, // Defines which claim represents the user's unique identifier
                     RoleClaimType = ClaimTypes.Role, // Defines which claim represents user roles
                 };
@@ -158,10 +203,45 @@ public class Startup
                             context.HttpContext.RequestServices.GetRequiredService<ITokenService>();
 
                         // Check whether this token has been revoked (e.g., logout, blacklist, security event)
-                        if (await tokenService.IsTokenRevokedAsync(jti))
+                        if (
+                            await tokenService.IsTokenRevokedAsync(
+                                jti,
+                                context.HttpContext.RequestAborted
+                            )
+                        )
                         {
                             // Reject the token if it is found in the revocation store
                             context.Fail("Token has been revoked");
+                            return;
+                        }
+
+                        // Reject every token issued before a user-wide revocation
+                        // ("log out everywhere", password change, deactivation).
+                        var userId =
+                            context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                            ?? context.Principal?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+                        var issuedAtMilliseconds = context
+                            .Principal?.FindFirst(TokenService.IssuedAtMillisecondsClaimType)
+                            ?.Value;
+
+                        if (
+                            string.IsNullOrEmpty(userId)
+                            || !long.TryParse(issuedAtMilliseconds, out var issuedAt)
+                        )
+                        {
+                            context.Fail("Token missing user or issuance metadata");
+                            return;
+                        }
+
+                        if (
+                            await tokenService.IsUserRevokedAsync(
+                                userId,
+                                issuedAt,
+                                context.HttpContext.RequestAborted
+                            )
+                        )
+                        {
+                            context.Fail("All user tokens have been revoked");
                         }
                     },
                 };
@@ -193,6 +273,8 @@ public class Startup
         services.AddScoped<IAppSettingService, AppSettingService>();
 
         #endregion
+
+        #region Controllers, OpenAPI, versioning and CORS
 
         services.AddMapster();
 
@@ -298,6 +380,8 @@ public class Startup
                 }
             );
         });
+
+        #endregion
     }
 
     private const string DataProtectionKeysDirectory = "/app/DataProtection-Keys";
@@ -330,21 +414,117 @@ public class Startup
             .SetApplicationName(applicationName);
     }
 
+    /// <summary>
+    /// "Swagger:Enabled" when set; otherwise enabled only in Development.
+    /// </summary>
+    private bool IsSwaggerEnabled(IWebHostEnvironment env) =>
+        Configuration.GetValue<bool?>("Swagger:Enabled") ?? env.IsDevelopment();
+
+    /// <summary>
+    /// Trusts X-Forwarded-For/Proto from a reverse proxy. Configure
+    /// "Hosting:ForwardedHeaders:KnownProxies" with the proxy IPs; when the list
+    /// is empty every source is trusted, which is safe only if the API is
+    /// reachable exclusively through the proxy (e.g. a private Docker network).
+    /// </summary>
+    private void AddForwardedHeaders(IServiceCollection services)
+    {
+        var section = Configuration.GetSection("Hosting:ForwardedHeaders");
+        if (!section.GetValue<bool>("Enabled"))
+        {
+            return;
+        }
+
+        var knownProxies = section.GetSection("KnownProxies").Get<string[]>() ?? [];
+
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders =
+                ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+            options.KnownIPNetworks.Clear();
+            options.KnownProxies.Clear();
+
+            foreach (var proxy in knownProxies)
+            {
+                options.KnownProxies.Add(IPAddress.Parse(proxy));
+            }
+        });
+    }
+
+    /// <summary>
+    /// Fixed-window limit per client IP for authentication endpoints
+    /// (see [EnableRateLimiting] in AccountApiController).
+    /// </summary>
+    private void AddRateLimiting(IServiceCollection services)
+    {
+        var section = Configuration.GetSection("RateLimiting:Authentication");
+        var permitLimit = section.GetValue("PermitLimit", 10);
+        var window = TimeSpan.FromSeconds(section.GetValue("WindowSeconds", 60));
+
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.AddPolicy(
+                RateLimitPolicyNames.Authentication,
+                httpContext =>
+                    RateLimitPartition.GetFixedWindowLimiter(
+                        httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                        _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = permitLimit,
+                            Window = window,
+                            QueueLimit = 0,
+                        }
+                    )
+            );
+        });
+    }
+
     // ------------------------------------------------------------
     // Middleware pipeline configuration
     // ------------------------------------------------------------
     public void ConfigurePipeline(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        app.UseStaticFiles();
+        #region Proxy and path base
 
-        // Swagger
+        // Must run first so later middleware sees the client's scheme and IP.
+        if (Configuration.GetValue<bool>("Hosting:ForwardedHeaders:Enabled"))
+        {
+            app.UseForwardedHeaders();
+        }
+
+        // For hosting under a sub-path behind a reverse proxy, e.g. "/apis/app".
+        var pathBase = Configuration["Hosting:PathBase"];
+        if (!string.IsNullOrWhiteSpace(pathBase))
+        {
+            app.UsePathBase(pathBase);
+        }
+
+        #endregion
+
+        #region Error handling and OpenAPI
+
         if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseExceptionHandler();
+        }
+
+        // Swagger UI and JSON only when enabled (Development by default; see
+        // IsSwaggerEnabled). Publishing the API description in production gives
+        // attackers a map of every endpoint.
+        if (IsSwaggerEnabled(env))
         {
             app.UseSwagger();
             app.UseSwaggerUI(options =>
             {
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-                options.SwaggerEndpoint("/swagger/v2/swagger.json", "v2");
+                // Relative URLs so the UI also works under a path base.
+                options.SwaggerEndpoint("v1/swagger.json", "v1");
+                options.SwaggerEndpoint("v2/swagger.json", "v2");
 
                 // Also, versions can be separated in folders by controller grouping
                 /*  Controllers/
@@ -355,15 +535,11 @@ public class Startup
                  *   etc.
                  */
             });
+        }
 
-            app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            // Optionally still expose JSON for machine clients
-            app.UseSwagger();
-            app.UseExceptionHandler();
-        }
+        app.UseStaticFiles();
+
+        #endregion
 
         // Convert SQL Server connectivity failures into a 503 JSON response.
         // Registered after the exception handlers so it sees these exceptions
@@ -372,6 +548,7 @@ public class Startup
         app.UseMiddleware<AppAvailabilityMiddleware>();
 
         app.UseRouting();
+        app.UseRateLimiter();
 
         // UseCors must be called before UseResponseCaching
         app.UseCors(PolicyNames.AllowSpecificOrigin);
@@ -443,6 +620,24 @@ public class Startup
                         )
                 )
                 .AllowAnonymous();
+
+            // Docker Desktop and browsers open the root URL: send them to Swagger
+            // when it is enabled.
+            if (IsSwaggerEnabled(env))
+            {
+                endpoints
+                    .MapGet(
+                        "/",
+                        context =>
+                        {
+                            context.Response.Redirect(
+                                $"{context.Request.PathBase}/swagger/index.html"
+                            );
+                            return Task.CompletedTask;
+                        }
+                    )
+                    .AllowAnonymous();
+            }
 
             // Standard MVC controller routing (if you have API controllers)
             endpoints.MapControllers();

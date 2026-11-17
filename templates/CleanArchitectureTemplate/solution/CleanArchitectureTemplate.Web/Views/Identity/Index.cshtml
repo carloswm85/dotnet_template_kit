@@ -1,0 +1,240 @@
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Identity
+
+@model IdentityDashboardViewModel
+
+@{
+    ViewData["Title"] = "Administration dashboard";
+}
+
+<section class="home-shortcuts card my-3" aria-labelledby="identity-dashboard-title">
+    <header class="card-header pb-3">
+        <h1 id="identity-dashboard-title" class="fw-normal my-3">
+            <i class="bi bi-gear me-2" aria-hidden="true"></i>@ViewData["Title"]
+        </h1>
+    </header>
+
+    <div class="card-body">
+
+        <!-- (A) SHORTCUTS -->
+        <h2 class="home-shortcuts__heading">Users and roles</h2>
+
+        <div class="home-shortcuts__grid">
+            <a asp-controller="Identity"
+               asp-action="UserList"
+               class="home-shortcut home-shortcut--request">
+                <i class="bi bi-people home-shortcut__icon" aria-hidden="true"></i>
+                <span class="home-shortcut__content">
+                    <span class="home-shortcut__title">Users</span>
+                    <span class="home-shortcut__detail">@Model.TotalUsers registered</span>
+                </span>
+            </a>
+
+            <a asp-controller="Identity"
+               asp-action="UserCreate"
+               class="home-shortcut home-shortcut--use">
+                <i class="bi bi-person-plus home-shortcut__icon" aria-hidden="true"></i>
+                <span class="home-shortcut__content">
+                    <span class="home-shortcut__title">New user</span>
+                </span>
+            </a>
+
+            <a asp-controller="Identity"
+               asp-action="RoleList"
+               class="home-shortcut home-shortcut--administration">
+                <i class="bi bi-shield-lock home-shortcut__icon" aria-hidden="true"></i>
+                <span class="home-shortcut__content">
+                    <span class="home-shortcut__title">Roles</span>
+                    <span class="home-shortcut__detail">@Model.Roles.Count defined</span>
+                </span>
+            </a>
+
+            <a asp-controller="Identity"
+               asp-action="RoleCreate"
+               class="home-shortcut home-shortcut--operations">
+                <i class="bi bi-shield-plus home-shortcut__icon" aria-hidden="true"></i>
+                <span class="home-shortcut__content">
+                    <span class="home-shortcut__title">New role</span>
+                </span>
+            </a>
+        </div>
+
+        <!-- (B) ACCOUNT KPIs -->
+        <h2 class="home-shortcuts__heading">Account status</h2>
+
+        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-6 g-2">
+            @{
+                var kpis = new[]
+                {
+                    (Title: "Total", Value: Model.TotalUsers, Icon: "bi-people", Css: "text-body"),
+                    (Title: "Active", Value: Model.ActiveUsers, Icon: "bi-person-check", Css: "text-success"),
+                    (Title: "Inactive", Value: Model.InactiveUsers, Icon: "bi-person-dash", Css: "text-secondary"),
+                    (Title: "Unconfirmed email", Value: Model.UnconfirmedEmailUsers, Icon: "bi-envelope-exclamation", Css: "text-warning"),
+                    (Title: "Locked out", Value: Model.LockedOutUsers, Icon: "bi-lock", Css: "text-danger"),
+                    (Title: "With 2FA", Value: Model.TwoFactorUsers, Icon: "bi-shield-check", Css: "text-info"),
+                };
+            }
+
+            @foreach (var kpi in kpis)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="small text-muted">@kpi.Title</span>
+                                <i class="bi @kpi.Icon @kpi.Css" aria-hidden="true"></i>
+                            </div>
+                            <div class="fs-3 fw-semibold @kpi.Css">@kpi.Value</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <p class="small text-muted mt-2 mb-0">
+            <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>
+            @Model.NewUsers new user(s) in the last @IdentityDashboardViewModel.NewUsersWindowDays days.
+        </p>
+
+        <!-- (D) NEEDS ATTENTION -->
+        <h2 class="home-shortcuts__heading">
+            Needs attention
+            @if (Model.AttentionTotal > 0)
+            {
+                <span class="badge text-bg-warning align-middle ms-1">@Model.AttentionTotal</span>
+            }
+        </h2>
+
+        @if (Model.AttentionItems.Count == 0)
+        {
+            <div class="alert alert-success mb-0" role="status">
+                <i class="bi bi-check-circle me-2" aria-hidden="true"></i>Nothing pending.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">User</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Registered</th>
+                            <th scope="col">Reason</th>
+                            <th scope="col" class="text-end"><span class="visually-hidden">Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.AttentionItems)
+                        {
+                            <tr>
+                                <td>@item.DisplayName</td>
+                                <td class="text-break">@item.Email</td>
+                                <td class="text-nowrap">@(item.RegistrationDate?.ToString("dd/MM/yyyy") ?? "-")</td>
+                                <td>
+                                    @if (item.IsLockedOut)
+                                    {
+                                        <span class="badge text-bg-danger me-1"><i class="bi bi-lock me-1" aria-hidden="true"></i>Locked out</span>
+                                    }
+                                    @if (item.IsInactive)
+                                    {
+                                        <span class="badge text-bg-secondary me-1"><i class="bi bi-person-dash me-1" aria-hidden="true"></i>Inactive</span>
+                                    }
+                                    @if (item.HasOnlyBaseRole)
+                                    {
+                                        <span class="badge text-bg-info me-1"><i class="bi bi-tag me-1" aria-hidden="true"></i>Only base role</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a asp-controller="Identity"
+                                       asp-action="UserEdit"
+                                       asp-route-id="@item.Id"
+                                       class="text-decoration-none"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="top"
+                                       title="Edit user"
+                                       aria-label="Edit user @item.DisplayName">
+                                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Model.AttentionTotal > Model.AttentionItems.Count)
+            {
+                <p class="small text-muted mt-2 mb-0">
+                    Showing @Model.AttentionItems.Count of @Model.AttentionTotal (newest first).
+                </p>
+            }
+        }
+
+        <!-- (C) USERS PER ROLE -->
+        <h2 class="home-shortcuts__heading">Users by role</h2>
+
+        @if (Model.Roles.Count == 0)
+        {
+            <div class="alert alert-info mb-0" role="status">No roles defined.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Role</th>
+                            <th scope="col" class="text-center">Public</th>
+                            <th scope="col" class="text-center">Default</th>
+                            <th scope="col" class="text-end">Users</th>
+                            <th scope="col" class="text-end"><span class="visually-hidden">Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var role in Model.Roles)
+                        {
+                            <tr>
+                                <td>@role.Name</td>
+                                <td class="text-center">
+                                    @if (role.IsPublic)
+                                    {
+                                        <i class="bi bi-check-circle-fill text-success" aria-label="Yes"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-dash text-muted" aria-label="No"></i>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (role.IsDefault)
+                                    {
+                                        <i class="bi bi-check-circle-fill text-success" aria-label="Yes"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-dash text-muted" aria-label="No"></i>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <span class="badge @(role.UserCount > 0 ? "text-bg-primary" : "text-bg-secondary")">@role.UserCount</span>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-controller="Identity"
+                                       asp-action="RoleEdit"
+                                       asp-route-id="@role.Id"
+                                       class="text-decoration-none"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="top"
+                                       title="Edit role"
+                                       aria-label="Edit role @role.Name">
+                                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>

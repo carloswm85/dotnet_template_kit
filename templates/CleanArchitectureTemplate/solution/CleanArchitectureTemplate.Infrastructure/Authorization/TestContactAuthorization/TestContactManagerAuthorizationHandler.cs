@@ -59,7 +59,7 @@ public class TestContactManagerAuthorizationHandler
         }
 
         // Managers can approve or reject.
-        if (context.User.IsInRole(RoleConstants.ManagersRole))
+        if (context.User.IsInRole(RoleNames.Manager))
         {
             context.Succeed(requirement);
         }

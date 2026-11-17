@@ -1,0 +1,453 @@
+@using CleanArchitectureTemplate.Web.Controllers.Identity
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Identity
+
+@model UserViewModel
+
+@{
+    ViewData["Title"] = "Edit user";
+    string roleBg = "";
+    bool isLockedOut = Model.LockoutEnd != null && Model.LockoutEnd > DateTimeOffset.UtcNow;
+}
+
+<div class="card col-12 col-xl-10 mx-auto my-3">
+    <div class="card-header pb-3">
+        <h3 class="fw-normal my-3">
+            <i class="bi bi-pencil-square me-2"></i>@ViewData["Title"]
+        </h3>
+    </div>
+
+    <div class="card-body">
+
+        <form asp-action="UserEdit" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <!-- HIDDEN_FIELDS -->
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ImagePath" />
+
+            <!-- ===================== BASIC INFORMATION ===================== -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Basic information
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+
+                            <!-- USER_NAME -->
+                            <div class="mb-3">
+                                <label asp-for="UserName" class="form-label fw-semibold">
+                                    Username <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="UserName"
+                                       class="form-control"
+                                       placeholder="Enter the username" />
+                                <span asp-validation-for="UserName"
+                                    class="text-danger small"></span>
+                            </div>
+
+                            <!-- IS_ACTIVE -->
+                            <div class="form-check form-switch mt-3">
+                                <input asp-for="IsActive" class="form-check-input" />
+                                <label asp-for="IsActive"
+                                    class="form-check-label fw-semibold"></label>
+                            </div>
+                            <small class="text-muted">Deactivating the account prevents the user from logging in</small>
+                        </div>
+
+                        <div class="col-md-6 text-center">
+                            <!-- Image Preview (Default or Existing) -->
+                            <div>
+                                <div class="mb-3">
+                                    <img id="previewImage"
+                                         src="@(string.IsNullOrEmpty(Model?.ImagePath)
+                                                ? Url.Content("~/images/defaults/default-person.png")
+                                                : Url.Content(Model.ImagePath))"
+                                         alt="User profile"
+                                         class="img-thumbnail"
+                                         style="max-width: 150px;" />
+                                </div>
+
+                                <!-- REPLACE IMAGE -->
+                                <div class="text-start">
+                                    <label class="form-label fw-semibold">Replace user image</label>
+                                    <input asp-for="Image"
+                                           type="file"
+                                           class="form-control"
+                                           accept="image/*"
+                                           onchange="previewFile(event)" />
+                                    <span asp-validation-for="Image"
+                                        class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="row g-3">
+
+                            <!-- FIRST_NAME -->
+                            <div class="col-md-6">
+                                <label asp-for="FirstName" class="form-label fw-semibold">
+                                    First name <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="FirstName"
+                                       class="form-control"
+                                       placeholder="Enter the first name" />
+                                <span asp-validation-for="FirstName"
+                                    class="text-danger small"></span>
+                            </div>
+
+                            <!-- LAST_NAME -->
+                            <div class="col-md-6">
+                                <label asp-for="LastName" class="form-label fw-semibold">
+                                    Last name <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="LastName"
+                                       class="form-control"
+                                       placeholder="Enter the last name" />
+                                <span asp-validation-for="LastName"
+                                    class="text-danger small"></span>
+                            </div>
+                            
+                            <!-- CITY -->
+                            <div class="col-md-6">
+                                <label asp-for="City" class="form-label fw-semibold">
+                                    City <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="City"
+                                       class="form-control"
+                                       placeholder="Enter the city" />
+                                <span asp-validation-for="City" class="text-danger small"></span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===================== CONTACT INFORMATION ===================== -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-envelope me-2"></i>Contact information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label fw-semibold">
+                                Email <span class="text-danger">*</span>
+                            </label>
+
+                            <!-- EMAIL -->
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-envelope"></i>
+                                </span>
+                                <input asp-for="Email"
+                                       class="form-control"
+                                       type="email"
+                                       placeholder="user@example.com" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email status</label>
+
+                            <!-- EMAIL_CONFIRMED -->
+                            <div class="form-check form-switch">
+                                <input asp-for="EmailConfirmed"
+                                       class="form-check-input"
+                                       type="checkbox"
+                                       role="switch" />
+                                <label asp-for="EmailConfirmed" class="form-check-label">
+                                    Email confirmed
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="PhoneNumber" class="form-label fw-semibold">Phone number</label>
+
+                            <!-- PHONE_NUMBER -->
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-telephone"></i>
+                                </span>
+                                <input asp-for="PhoneNumber"
+                                       class="form-control"
+                                       type="tel"
+                                       id="PhoneNumberInput"
+                                       placeholder="+1 (555) 123-4567" />
+
+                            </div>
+                            <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phone status</label>
+
+                            <!-- PHONE_NUMBER_CONFIRMED -->
+                            <div class="form-check form-switch">
+                                <input asp-for="PhoneNumberConfirmed"
+                                       class="form-check-input"
+                                       type="checkbox"
+                                       role="switch"
+                                       id="PhoneConfirmedSwitch"
+                                       disabled="@(string.IsNullOrWhiteSpace(Model!.PhoneNumber))" />
+
+
+                                <label asp-for="PhoneNumberConfirmed" class="form-check-label">
+                                    Phone confirmed
+                                </label>
+                            </div>
+                            @if (!Model.HasPhoneNumber)
+                            {
+                                <small class="text-muted">
+                                    Enter a phone number to enable confirmation
+                                </small>
+                            }
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====================== SECURITY SETTINGS ====================== -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-shield-lock me-2"></i>Security settings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+
+                            <!-- TWO_FACTOR_ENABLED -->
+                            <div class="form-check form-switch">
+                                <input asp-for="TwoFactorEnabled"
+                                       class="form-check-input"
+                                       type="checkbox"
+                                       role="switch" />
+                                <label asp-for="TwoFactorEnabled"
+                                       class="form-check-label fw-semibold">
+                                    Two-factor authentication
+                                </label>
+                            </div>
+                            <small class="text-muted">Requires an extra verification step at login</small>
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <!-- LOCKOUT_ENABLED -->
+                            <div class="form-check form-switch">
+                                <input asp-for="LockoutEnabled"
+                                       class="form-check-input"
+                                       type="checkbox"
+                                       role="switch" />
+                                <label asp-for="LockoutEnabled"
+                                       class="form-check-label fw-semibold">
+                                    Lockout enabled
+                                </label>
+                            </div>
+                            <small class="text-muted">Allows locking the account after failed login attempts</small>
+                        </div>
+
+                        <!-- LOCKOUT_STATUS (read-only; ended with the UserUnlock action) -->
+                        <div class="col-md-6">
+                            <span class="form-label fw-semibold d-block">Lockout status</span>
+                            @if (isLockedOut)
+                            {
+                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-lock-fill me-1"></i>Locked out until @Model.LockoutEnd!.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                    </span>
+                                    <!-- Submits the separate unlock form below the main form -->
+                                    <button type="submit"
+                                            form="unlock-form"
+                                            class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Unlock this account? The failed attempt count is also reset.');">
+                                        <i class="bi bi-unlock me-1"></i>Unlock
+                                    </button>
+                                </div>
+                                <small class="text-muted">The lockout ends automatically at the date shown</small>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-unlock me-1"></i>Not locked
+                                </span>
+                            }
+                            @if (TempData[IdentityController.LockoutMessageKey] is string lockoutMessage)
+                            {
+                                <small class="text-success d-block mt-1">@lockoutMessage</small>
+                            }
+                            @if (TempData[IdentityController.LockoutErrorKey] is string lockoutError)
+                            {
+                                <small class="text-danger d-block mt-1">@lockoutError</small>
+                            }
+                        </div>
+
+                        <!-- ACCESS_FAILED_COUNT (read-only; reset by unlocking or a successful login) -->
+                        <div class="col-md-6">
+                            <span class="form-label fw-semibold d-block">Failed login attempts</span>
+                            <span class="badge @(Model.AccessFailedCount > 0 ? "bg-warning text-dark" : "bg-secondary")">
+                                @Model.AccessFailedCount
+                            </span>
+                            <small class="text-muted d-block">Failed attempts since the last successful login or lockout</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================== ROLES & CLAIMS ======================= -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people me-2"></i>Roles y reclamaciones
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3" role="alert">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Note:</strong> Roles and claims are managed through separate actions. Use those pages to change the user's permissions.
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Current roles</label>
+                            @if (Model.Roles != null && Model.Roles.Any())
+                            {
+                                <div class="d-flex flex-wrap gap-2 p-3 border rounded bg-light">
+                                    @foreach (var role in Model.Roles)
+                                    {
+                                        switch (role)
+                                        {
+                                            default:
+                                                roleBg = "bg-info";
+                                                break;
+                                        }
+
+                                        <span class="badge @roleBg text-dark">
+                                            <i class="bi bi-person-badge me-1"></i>@role
+                                        </span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted fst-italic mb-0">No roles assigned</p>
+                            }
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Current claims</label>
+                            @if (Model.Claims != null && Model.Claims.Any())
+                            {
+                                <div class="d-flex flex-wrap gap-2 p-3 border rounded bg-light">
+                                    @foreach (var claim in Model.Claims)
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-key-fill me-1"></i> <span>@claim.Type: @claim.Value</span>
+                                        </span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted fst-italic mb-0">No claims assigned</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===================== FOOTER ===================== -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-center">
+                        <div class="text-muted">
+                            <small>
+                                <i class="bi bi-info-circle me-1"></i>
+                                Fields marked with <span class="text-danger">*</span> are required
+                            </small>
+                        </div>
+                        <!-- BUTTONS -->
+                        <div class="d-flex flex-column flex-md-row gap-2 ms-lg-auto">
+                            <a asp-action="UserList"
+                               class="btn btn-lg btn-outline-secondary flex-grow-1">
+                                <i class="bi bi-x-lg me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-lg btn-primary flex-grow-1">
+                                <i class="bi bi-check-lg me-1"></i>Save changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- UNLOCK_FORM: kept outside the main form (forms cannot nest); submitted by the "Unlock" button -->
+        @if (isLockedOut)
+        {
+            <form id="unlock-form"
+                  asp-action="UserUnlock"
+                  asp-route-id="@Model.Id"
+                  method="post"></form>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function() {
+            const phoneInput = document.getElementById('PhoneNumberInput');
+            const phoneSwitch = document.getElementById('PhoneConfirmedSwitch');
+
+            if (!phoneInput || !phoneSwitch) return;
+
+            const toggleSwitch = () => {
+                const hasValue = phoneInput.value.trim().length > 0;
+
+                phoneSwitch.disabled = !hasValue;
+
+                if (!hasValue) {
+                    phoneSwitch.checked = false;
+                }
+            };
+
+            // initial state (in case browser autofills)
+            toggleSwitch();
+
+            phoneInput.addEventListener('input', toggleSwitch);
+        })();
+
+        function previewFile(event) {
+            const input = event.target;
+            const preview = document.getElementById('previewImage');
+
+            if (input.files && input.files[0]) {
+                preview.src = URL.createObjectURL(input.files[0]);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const img = document.getElementById("previewImage");
+
+            if (img) {
+                img.addEventListener("error", function() {
+                    this.src = '/images/defaults/default-person.png';
+                });
+            }
+        });
+    </script>
+}

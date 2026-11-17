@@ -1,0 +1,152 @@
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Identity
+
+@model RoleViewModel
+
+@{
+    ViewData["Title"] = "Create role";
+}
+
+<div class="card col-12 col-xl-10 mx-auto my-3">
+    <div class="card-header pb-3">
+        <h3 class="fw-normal my-3">
+            <i class="bi bi-shield-plus me-2"></i>@ViewData["Title"]
+        </h3>
+    </div>
+
+    <div class="card-body">
+
+            <form asp-action="RoleCreate" method="post" novalidate>
+                <div asp-validation-summary="ModelOnly"
+                    class="alert alert-danger"
+                    role="alert"></div>
+
+                <!-- BASIC_INFORMATION -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-info-circle me-2"></i>Basic information
+                        </h5>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row g-3">
+
+                            <!-- NAME -->
+                            <div class="col-md-6">
+                                <label asp-for="Name" class="form-label fw-semibold">
+                                    Role name <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Name"
+                                       class="form-control"
+                                       placeholder="Enter the role name"
+                                       autofocus />
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <small class="text-muted">
+                                    Use clear, descriptive names. Example: <code>Administrator</code>, <code>Editor</code>
+                                </small>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role Settings -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-sliders me-2"></i>Role settings
+                        </h5>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row g-4">
+
+                            <div class="col-md-6">
+
+                                <!-- IS_PUBLIC -->
+                                <div class="form-check form-switch">
+                                    <input asp-for="IsPublic"
+                                           class="form-check-input"
+                                           type="checkbox"
+                                           role="switch" />
+                                    <label asp-for="IsPublic" class="form-check-label fw-semibold">
+                                        Public role
+                                    </label>
+                                </div>
+                                <small class="text-muted">
+                                    Can be assigned generally
+
+                                </small>
+                            </div>
+
+                            <div class="col-md-6">
+
+                                <!-- IS_DEFAULT -->
+                                <div class="form-check form-switch">
+                                    <input asp-for="IsDefault"
+                                           class="form-check-input"
+                                           type="checkbox"
+                                           role="switch" />
+                                    <label asp-for="IsDefault" class="form-check-label fw-semibold">
+                                        Default role
+                                    </label>
+                                </div>
+                                <small class="text-muted">
+                                    Assigned automatically to new users
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info / Permissions -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-shield-lock me-2"></i>Permisos
+                        </h5>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="alert alert-info mb-0" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Note:</strong>
+                            Permissions and claims can be configured after the role is created.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BUTTONS -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-center">
+                            <div class="text-muted">
+                                <small>
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Fields marked with <span class="text-danger">*</span> are required
+                                </small>
+                            </div>
+                            <!-- BUTTONS -->
+                            <div class="d-flex flex-column flex-md-row gap-2 ms-lg-auto">
+                                <a asp-action="RoleList"
+                                   class="btn btn-outline-secondary btn-lg flex-grow-1">
+                                    <i class="bi bi-x-lg me-1"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                                    <i class="bi bi-shield-plus me-1"></i>Create role
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,4 +1,4 @@
-﻿@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account
 
 @model VerifyCodeViewModel
 
@@ -23,6 +23,7 @@
                 <div asp-validation-summary="ModelOnly"
                      class="text-danger small"></div>
 
+                <!-- HIDDEN_FIELDS -->
                 <input asp-for="Provider" type="hidden" />
                 <input asp-for="RememberMe" type="hidden" />
 
@@ -32,6 +33,7 @@
                     </p>
                 </div>
 
+                <!-- CODE -->
                 <div class="col-12">
                     <label asp-for="Code" class="form-label"></label>
                     <input asp-for="Code"
@@ -44,6 +46,8 @@
                 </div>
 
                 <div class="col-12">
+
+                    <!-- REMEMBER_BROWSER -->
                     <div class="form-check">
                         <input asp-for="RememberBrowser"
                                class="form-check-input border-secondary" />
@@ -52,6 +56,7 @@
                     </div>
                 </div>
 
+                <!-- BUTTONS -->
                 <div class="col-12 d-grid">
                     <button type="submit" class="btn btn-primary">
                         Verify

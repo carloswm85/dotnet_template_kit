@@ -78,7 +78,7 @@
                 </dl>
 
 
-                @if (User.IsInRole("Manager") || User.IsInRole("Admin"))
+                @if (User.IsInRole(RoleNames.Manager) || User.IsInRole(RoleNames.Admin))
                 {
                     <hr />
 

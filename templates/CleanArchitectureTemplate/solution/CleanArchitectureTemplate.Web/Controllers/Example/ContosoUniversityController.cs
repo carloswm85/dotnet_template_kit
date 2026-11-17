@@ -6,6 +6,8 @@ using CleanArchitectureTemplate.ApplicationCore.Entities.ContosoUniversity;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces.ContosoUniversity;
 using CleanArchitectureTemplate.Web.Models;
+using CleanArchitectureTemplate.Web.Services;
+using CleanArchitectureTemplate.Web.Services.Interfaces;
 
 namespace CleanArchitectureTemplate.Web.Controllers.Example;
 
@@ -15,16 +17,19 @@ public class ContosoUniversityController : Controller
     private readonly ILogger<ContosoUniversityController> _logger;
     private readonly IContosoUniversityService _contosoService;
     private readonly IPaginationService _paginationService;
+    private readonly IImageStorageService _imageStorage;
 
     public ContosoUniversityController(
         ILogger<ContosoUniversityController> logger,
         IContosoUniversityService contosoService,
-        IPaginationService paginationService
+        IPaginationService paginationService,
+        IImageStorageService imageStorage
     )
     {
         _logger = logger;
         _contosoService = contosoService;
         _paginationService = paginationService;
+        _imageStorage = imageStorage;
     }
 
     #region TestStudents
@@ -106,7 +111,9 @@ public class ContosoUniversityController : Controller
 
         try
         {
-            studentDto = await UploadImage(studentDto, "students");
+            studentDto.ImagePath =
+                await _imageStorage.SaveAsync(studentDto.Image, "students", HttpContext.RequestAborted)
+                ?? ImageStorageService.DefaultImagePath;
 
             await _contosoService.CreateTestStudentAsync(studentDto, HttpContext.RequestAborted);
 
@@ -156,7 +163,7 @@ public class ContosoUniversityController : Controller
         try
         {
             if (studentDto.Image != null)
-                studentDto = await UploadImage(studentDto, "students");
+                studentDto.ImagePath = await _imageStorage.SaveAsync(studentDto.Image, "students", HttpContext.RequestAborted);
 
             await _contosoService.UpdateTestStudentAsync(Id, studentDto, HttpContext.RequestAborted);
             return RedirectToAction(nameof(Index));
@@ -283,7 +290,9 @@ public class ContosoUniversityController : Controller
             studentDto.LastName = student.LastName;
             studentDto.TestEnrollmentDate = student.TestEnrollmentDate;
 
-            studentDto = await UploadImage(studentDto, "students");
+            studentDto.ImagePath =
+                await _imageStorage.SaveAsync(studentDto.Image, "students", HttpContext.RequestAborted)
+                ?? ImageStorageService.DefaultImagePath;
 
             await _contosoService.CreateTestStudentAsync(studentDto, HttpContext.RequestAborted);
             return NoContent(); // 204 - successful update
@@ -365,40 +374,4 @@ public class ContosoUniversityController : Controller
     /// <param name="imageContainer"></param>
     /// <param name="folderName"></param>
     /// <returns></returns>
-    private async Task<dynamic> UploadImage(dynamic imageContainer, string folderName)
-    {
-        if (imageContainer.Image != null)
-        {
-            var imageFolder = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                "images",
-                folderName
-            );
-
-            // Ensure directory exists
-            if (!Directory.Exists(imageFolder))
-                Directory.CreateDirectory(imageFolder);
-
-            // Generate filename
-            string fileName =
-                $"{imageContainer.Id}_{Guid.NewGuid()}{Path.GetExtension(imageContainer.Image.FileName)}";
-
-            var filePath = Path.Combine(imageFolder, fileName);
-
-            // Save file
-            using var fileStream = new FileStream(filePath, FileMode.Create);
-            await imageContainer.Image.CopyToAsync(fileStream);
-
-            // ✅ Store ONLY relative path
-            imageContainer.ImagePath = $"/images/{folderName}/{fileName}";
-        }
-        else
-        {
-            // ✅ Also relative
-            imageContainer.ImagePath = $"/images/defaults/default-{folderName}.png";
-        }
-
-        return imageContainer;
-    }
 }

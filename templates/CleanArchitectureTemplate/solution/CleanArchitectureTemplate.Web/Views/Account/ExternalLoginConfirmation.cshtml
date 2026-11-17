@@ -1,4 +1,4 @@
-﻿@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account
 
 @model ExternalLoginConfirmationViewModel
 
@@ -30,12 +30,13 @@
                     <div class="alert alert-info d-flex align-items-start gap-2" role="alert">
                         <i class="bi bi-info-circle mt-1"></i>
                         <div>
-                            You’ve successfully authenticated with
+                            You have successfully authenticated with
                             <strong>@ViewData["ProviderDisplayName"]</strong>.
-                            Please enter an email address to complete your registration.
+                            Enter an email address for this site to finish registering.
                         </div>
                     </div>
 
+                    <!-- EMAIL -->
                     <div class="mb-3">
                         <label asp-for="Email" class="form-label"></label>
                         <input asp-for="Email"
@@ -45,6 +46,7 @@
                               class="text-danger small"></span>
                     </div>
 
+                    <!-- BUTTONS -->
                     <div class="d-flex justify-content-end gap-2">
                         <button type="submit"
                                 class="btn btn-primary">

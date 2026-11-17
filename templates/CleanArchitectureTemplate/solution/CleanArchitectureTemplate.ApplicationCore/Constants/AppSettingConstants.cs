@@ -7,12 +7,14 @@ public static class AppSettingConstants
 {
     // Setting names
     public const string IsAppOnline = "IsAppOnline";
+    public const string AnnouncementMessage = "AnnouncementMessage";
 
     // Categories
     public const string ApplicationCategory = "Application";
 
     // Types
     public const string BooleanType = "Boolean";
+    public const string StringType = "String";
 
     /// <summary>
     /// Value returned when a setting is missing or cannot be read.

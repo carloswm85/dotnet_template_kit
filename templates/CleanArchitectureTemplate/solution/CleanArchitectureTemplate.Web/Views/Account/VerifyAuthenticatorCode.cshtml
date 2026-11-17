@@ -1,4 +1,4 @@
-﻿@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account
 
 @model UseRecoveryCodeViewModel
 
@@ -27,6 +27,7 @@
 
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
+                    <!-- CODE -->
                     <div class="mb-3">
                         <label asp-for="Code" class="form-label"></label>
                         <input asp-for="Code"
@@ -36,6 +37,7 @@
                         <span asp-validation-for="Code" class="text-danger"></span>
                     </div>
 
+                    <!-- BUTTONS -->
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">
                             Verify recovery code

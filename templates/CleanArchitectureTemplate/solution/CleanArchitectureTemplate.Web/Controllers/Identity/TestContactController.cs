@@ -5,7 +5,7 @@ using CleanArchitectureTemplate.ApplicationCore.Constants;
 using CleanArchitectureTemplate.ApplicationCore.Entities;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces.ContosoUniversity;
 using CleanArchitectureTemplate.Infrastructure.Authorization.TestContactAuthorization;
-using CleanArchitectureTemplate.Infrastructure.Interfaces.IdentityInterfaces;
+using CleanArchitectureTemplate.Infrastructure.Interfaces.Identity;
 using CleanArchitectureTemplate.Web.Models.ViewModels.TestContact;
 
 namespace CleanArchitectureTemplate.Web.Controllers.Identity;
@@ -39,8 +39,8 @@ public class TestContactController : Controller
     public async Task<IActionResult> Index()
     {
         var isAuthorized =
-            User.IsInRole(RoleConstants.ManagersRole)
-            || User.IsInRole(RoleConstants.AdministratorsRole);
+            User.IsInRole(RoleNames.Manager)
+            || User.IsInRole(RoleNames.Admin);
 
         var currentUserId = _userManagerService.GetUserId(User);
 
@@ -70,8 +70,8 @@ public class TestContactController : Controller
             return NotFound();
 
         var isAuthorized =
-            User.IsInRole(RoleConstants.ManagersRole)
-            || User.IsInRole(RoleConstants.AdministratorsRole);
+            User.IsInRole(RoleNames.Manager)
+            || User.IsInRole(RoleNames.Admin);
 
         var currentUserId = _userManagerService.GetUserId(User);
 

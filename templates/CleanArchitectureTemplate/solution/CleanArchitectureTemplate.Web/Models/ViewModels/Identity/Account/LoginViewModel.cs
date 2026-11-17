@@ -14,6 +14,7 @@ public class LoginViewModel
 
     [Required]
     [DataType(DataType.Password)]
+    [Display(Name = "Password")]
     public string Password { get; set; } = default!;
 
     [Display(Name = "Remember me?")]

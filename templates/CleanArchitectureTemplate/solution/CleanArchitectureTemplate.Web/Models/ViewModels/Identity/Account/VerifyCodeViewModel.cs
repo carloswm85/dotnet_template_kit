@@ -11,6 +11,7 @@ public class VerifyCodeViewModel
     public string Provider { get; set; } = default!;
 
     [Required]
+    [Display(Name = "Code")]
     public string Code { get; set; } = default!;
 
     public string? ReturnUrl { get; set; }

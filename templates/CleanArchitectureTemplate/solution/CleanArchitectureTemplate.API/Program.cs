@@ -1,7 +1,7 @@
 using CleanArchitectureTemplate.API;
 using CleanArchitectureTemplate.ApplicationCore.Constants;
 using CleanArchitectureTemplate.Infrastructure.Data;
-using CleanArchitectureTemplate.Infrastructure.Model;
+using CleanArchitectureTemplate.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

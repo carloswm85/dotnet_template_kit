@@ -1,17 +1,20 @@
+using System.Globalization;
+using System.Net;
+using System.Threading.RateLimiting;
 using CleanArchitectureTemplate.ApplicationCore.Constants;
+using CleanArchitectureTemplate.ApplicationCore.Extensions;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces.ContosoUniversity;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces.Identity;
 using CleanArchitectureTemplate.ApplicationCore.Mappings;
 using CleanArchitectureTemplate.Infrastructure.Authorization.TestContactAuthorization;
-using CleanArchitectureTemplate.Infrastructure.Data;
-using CleanArchitectureTemplate.Infrastructure.Interfaces.IdentityInterfaces;
-using CleanArchitectureTemplate.Infrastructure.Model;
-using CleanArchitectureTemplate.Infrastructure.Model.Identity;
+using CleanArchitectureTemplate.Infrastructure.Interfaces.Identity;
+using CleanArchitectureTemplate.Infrastructure.Models;
+using CleanArchitectureTemplate.Infrastructure.Models.Identity;
 using CleanArchitectureTemplate.Infrastructure.Services;
-using CleanArchitectureTemplate.Infrastructure.Services.ContosoServices;
-using CleanArchitectureTemplate.Infrastructure.Services.ExternalServices;
-using CleanArchitectureTemplate.Infrastructure.Services.IdentityServices;
+using CleanArchitectureTemplate.Infrastructure.Services.ContosoUniversity;
+using CleanArchitectureTemplate.Infrastructure.Services.External;
+using CleanArchitectureTemplate.Infrastructure.Services.Identity;
 using CleanArchitectureTemplate.Web.HealthChecks;
 using CleanArchitectureTemplate.Web.Mappings;
 using CleanArchitectureTemplate.Web.Middleware;
@@ -22,14 +25,19 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 namespace CleanArchitectureTemplate.Web;
 
 public class StartUp
 {
+    private const string DataProtectionKeysDirectory = "/app/DataProtection-Keys";
+
     public StartUp(IConfiguration configuration)
     {
         Configuration = configuration;
@@ -37,58 +45,42 @@ public class StartUp
 
     public IConfiguration Configuration { get; set; }
 
-    // === SERVICES
-    // This method gets called by the runtime. Use this method to add services to the container.
-    public async void ConfigureServices(IServiceCollection services)
-    {
-        #region Services Configuration
+    private static bool IsRunningInContainer =>
+        string.Equals(
+            Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"),
+            "true",
+            StringComparison.OrdinalIgnoreCase
+        );
 
-        // Connection string "DefaultConnection" is pulled from configuration (appsettings.json).
+    // === SERVICES
+    // Called by the runtime to add services to the container.
+    public void ConfigureServices(IServiceCollection services)
+    {
+        #region Database and identity
+
+        // Connection string "DefaultConnection" comes from configuration.
         var connectionString =
             Configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException(
                 "Connection string 'DefaultConnection' not found."
             );
 
-        // Register DbContext with SQL Server as the database provider.
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure())
         );
-
-        // === DATA PROTECTION ===
-        // In a container, persist keys to a mounted volume so auth cookies and
-        // antiforgery tokens survive restarts and redeploys.
-        AddContainerDataProtection(services);
-
-        // === HEALTH CHECKS ===
-        services
-            .AddHealthChecks()
-            .AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
-
-        // === IDENTITY API CONFIGURATION ===
-        //services.AddIdentityCore<ApplicationUser>(
-        //        options => options.SignIn.RequireConfirmedAccount = true
-        //    )
-        //    .AddRoles<ApplicationRole>()
-        //    .AddEntityFrameworkStores<ApplicationDbContext>()
-        //    .AddSignInManager()
-        //    .AddDefaultTokenProviders();
 
         services
             .AddIdentity<ApplicationUser, ApplicationRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-        services.AddAuthentication();
-        services.AddAuthorization();
-
         services.Configure<IdentityOptions>(options =>
         {
-            // Default SignIn settings
+            // Sign-in
             options.SignIn.RequireConfirmedEmail = false;
             options.SignIn.RequireConfirmedPhoneNumber = false;
 
-            // Default Password settings
+            // Password
             options.Password.RequireDigit = true;
             options.Password.RequireLowercase = true;
             options.Password.RequireNonAlphanumeric = true;
@@ -96,29 +88,89 @@ public class StartUp
             options.Password.RequiredLength = 6;
             options.Password.RequiredUniqueChars = 1;
 
-            // Default Lockout settings
+            // Lockout
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
             options.Lockout.MaxFailedAccessAttempts = 3;
             options.Lockout.AllowedForNewUsers = true;
         });
 
-        // === MAPPINGS ===
+        // Re-validate the auth cookie against the security stamp every minute,
+        // so deactivating a user or changing their roles ends existing sessions
+        // quickly (see IdentityController.UserEdit).
+        services.Configure<SecurityStampValidatorOptions>(options =>
+        {
+            options.ValidationInterval = TimeSpan.FromMinutes(1);
+        });
+
+        services.AddAuthentication();
+        services.AddAuthorization(options => options.AddApplicationPolicies());
+
+        // Resource-based authorization handlers (TestContact example)
+        services.AddScoped<IAuthorizationHandler, TestContactIsOwnerAuthorizationHandler>();
+        services.AddSingleton<
+            IAuthorizationHandler,
+            TestContactAdministratorsAuthorizationHandler
+        >();
+        services.AddSingleton<IAuthorizationHandler, TestContactManagerAuthorizationHandler>();
+
+        #endregion
+
+        #region Data protection
+
+        // In a container, persist keys to a mounted volume so auth cookies and
+        // antiforgery tokens survive restarts and redeploys.
+        AddContainerDataProtection(services);
+
+        #endregion
+
+        #region Hosting: forwarded headers and rate limiting
+
+        AddForwardedHeaders(services);
+        AddRateLimiting(services);
+
+        #endregion
+
+        #region MVC and localization
+
+        services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+        services
+            .AddControllersWithViews(config =>
+            {
+                // Every page requires a signed-in user unless marked [AllowAnonymous].
+                var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+                config.Filters.Add(new AuthorizeFilter(policy));
+            })
+            .AddViewLocalization()
+            .AddDataAnnotationsLocalization()
+            .AddXmlDataContractSerializerFormatters();
+
+        #endregion
+
+        #region Mapping and caching
+
         var mapsterConfig = TypeAdapterConfig.GlobalSettings;
         mapsterConfig.Scan(
-            typeof(ApplicationMappingRegister).Assembly,
+            typeof(AppMappingRegister).Assembly,
             typeof(WebMappingRegister).Assembly
         );
 
         services.AddSingleton(mapsterConfig);
         services.AddScoped<IMapper, ServiceMapper>();
+        services.AddMapster();
 
-        // === AUTHORIZATION HANDLERS ===
-        services.AddScoped<IAuthorizationHandler, TestContactIsOwnerAuthorizationHandler>();
-        services.AddSingleton<IAuthorizationHandler, TestContactAdministratorsAuthorizationHandler>();
-        services.AddSingleton<IAuthorizationHandler, TestContactManagerAuthorizationHandler>();
+        services.AddMemoryCache();
 
-        // === HTTP CLIENT ===
-        // Configure HttpClient with base address from configuration
+        #endregion
+
+        #region Health checks
+
+        services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
+
+        #endregion
+
+        #region HTTP client
+
         services.AddHttpClient(
             "ApiClient",
             (provider, client) =>
@@ -134,105 +186,80 @@ public class StartUp
             }
         );
 
-        services.AddLocalization(options => options.ResourcesPath = "Resources");
+        #endregion
 
-        services
-            .AddControllersWithViews(config =>
-            {
-                var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-                config.Filters.Add(new AuthorizeFilter(policy));
-            })
-            .AddViewLocalization()
-            .AddDataAnnotationsLocalization()
-            .AddXmlDataContractSerializerFormatters();
+        #region Identity and external services
 
-        services.AddMapster();
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
-        // Identity Services
         services.AddScoped<IUserManagerService, UserManagerService>();
         services.AddScoped<ISignInManagerService, SignInManagerService>();
         services.AddScoped<IRoleManagerService, RoleManagerService>();
 
-        // External Services
         services.AddTransient<IEmailSender, MessagingService>();
         services.AddTransient<ISmsSender, MessagingService>();
 
-        // Application services
+        #endregion
+
+        #region Application services
+
+        services.AddSingleton(TimeProvider.System);
         services.AddScoped<IPaginationService, PaginationService>();
-        services.AddScoped<IContosoUniversityService, ContosoUniversityService>();
-        services.AddScoped<IWeatherForecastService, WeatherForectastService>();
+        services.AddSingleton<IImageStorageService, ImageStorageService>();
 
         // Runtime settings (AppSetting table), used by AppAvailabilityMiddleware
-        services.AddMemoryCache();
         services.AddScoped<IAppSettingService, AppSettingService>();
+
+        // Migrations and sample data at startup (skipped in Production)
+        services.AddHostedService<DatabaseInitializerHostedService>();
+
+        #endregion
+
+        #region Example services
+
+        services.AddScoped<IContosoUniversityService, ContosoUniversityService>();
+        services.AddScoped<IWeatherForecastService, WeatherForecastService>();
 
         #endregion
     }
 
-    private const string DataProtectionKeysDirectory = "/app/DataProtection-Keys";
-
-    private void AddContainerDataProtection(IServiceCollection services)
-    {
-        var isRunningInContainer = string.Equals(
-            Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"),
-            "true",
-            StringComparison.OrdinalIgnoreCase
-        );
-
-        if (!isRunningInContainer)
-        {
-            return;
-        }
-
-        var applicationName = Configuration["DataProtection:ApplicationName"];
-
-        if (string.IsNullOrWhiteSpace(applicationName))
-        {
-            throw new InvalidOperationException(
-                "DataProtection:ApplicationName is required when running in a container."
-            );
-        }
-
-        services
-            .AddDataProtection()
-            .PersistKeysToFileSystem(new DirectoryInfo(DataProtectionKeysDirectory))
-            .SetApplicationName(applicationName);
-    }
-
     // === REQUEST PIPELINE
-    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public async void Configure(
-        IApplicationBuilder app,
-        IWebHostEnvironment env,
-        ILoggerFactory loggerFactory
-    )
+    // Called by the runtime to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        #region Middleware Configuration
+        #region Proxy and path base
+
+        // Must run first so later middleware sees the client's scheme and IP.
+        if (Configuration.GetValue<bool>("Hosting:ForwardedHeaders:Enabled"))
+        {
+            app.UseForwardedHeaders();
+        }
+
+        // For hosting under a sub-path behind a reverse proxy, e.g. "/apps/web".
+        var pathBase = Configuration["Hosting:PathBase"];
+        if (!string.IsNullOrWhiteSpace(pathBase))
+        {
+            app.UsePathBase(pathBase);
+        }
+
+        #endregion
+
+        #region Error handling and transport security
 
         if (env.IsDevelopment())
         {
-            // Enable the Developer Exception Page in the development environment.
             app.UseDeveloperExceptionPage();
         }
         else
         {
-            // Use a custom error handling page for production.
-            // app.UseExceptionHandler("/Home/Error");
             app.UseExceptionHandler("/Error");
 
-            // REMEMBER THIS WORKS ONLY WITH:
-            // "ASPNETCORE_ENVIRONMENT": "Production"
+            // Re-execute the pipeline through ErrorController for status codes;
+            // {0} is the status code.
+            app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
-            // Returns error as plain text
-            // app.UseStatusCodePages(); // (1)
-
-            // Intersect error and return a view
-            // {0} is a placeholder for the status code
-            // app.UseStatusCodePagesWithRedirects("/Error/{0}"); // (2) Redirect to the string controller
-            app.UseStatusCodePagesWithReExecute("/Error/{0}"); // (3) Re-executes the pipeline
-
-            // Enable HTTP Strict Transport Security (HSTS) for enhanced security in production.
-            // The default duration is 30 days; you can adjust this value based on your requirements.
+            // HTTP Strict Transport Security (default 30 days).
             app.UseHsts();
         }
 
@@ -241,13 +268,37 @@ public class StartUp
         // access the database.
         app.UseMiddleware<DatabaseUnavailableMiddleware>();
 
+        // Only redirect to HTTPS when NOT running in a container
+        if (!IsRunningInContainer)
+        {
+            app.UseHttpsRedirection();
+        }
+
+        #endregion
+
+        #region Static files and localization
+
         app.UseStaticFiles();
 
-        // Only redirect to HTTPS when NOT running in a container
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER")))
-            app.UseHttpsRedirection();
+        // Uploaded images, from "Uploads:RootPath" (a volume in Docker)
+        var uploadsRoot = ImageStorageService.GetRootPath(env, Configuration);
+        Directory.CreateDirectory(uploadsRoot);
+        app.UseStaticFiles(
+            new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(uploadsRoot),
+                RequestPath = ImageStorageService.RequestPath,
+            }
+        );
+
+        app.UseRequestLocalization(CreateLocalizationOptions());
+
+        #endregion
+
+        #region Routing and authorization
 
         app.UseRouting();
+        app.UseRateLimiter();
 
         app.UseAuthentication();
 
@@ -255,8 +306,6 @@ public class StartUp
         app.UseMiddleware<AppAvailabilityMiddleware>();
 
         app.UseAuthorization();
-
-        app.UseRequestLocalization();
 
         app.UseEndpoints(endpoints =>
         {
@@ -298,46 +347,115 @@ public class StartUp
             );
         });
 
-        // Skip automatic migration and seeding at EF Core design time
-        // (`dotnet ef`) and in production, where migrations are applied
-        // explicitly as part of the deployment.
-        if (EF.IsDesignTime || env.IsProduction())
+        #endregion
+    }
+
+    #region Private helpers
+
+    private void AddContainerDataProtection(IServiceCollection services)
+    {
+        if (!IsRunningInContainer)
         {
-            loggerFactory
-                .CreateLogger<StartUp>()
-                .LogInformation(
-                    "Skipping automatic database migration and seeding "
-                        + "(design time or production)."
-                );
             return;
         }
 
-        // Add Contoso University test data to the database
-        // Generate identity users with roles
-        using (var scope = app.ApplicationServices.CreateScope())
-        {
-            var serviceProvider = scope.ServiceProvider;
-            var logger = serviceProvider.GetRequiredService<ILogger<StartUp>>();
-            try
-            {
-                // Set password with the Secret Manager tool.
-                //  `dotnet user-secrets set "SeedUserPW" "!Abc123Antartica" --project .\solution\CleanArchitectureTemplate.Web\`
-                var testUserPw =
-                    Configuration.GetValue<string>("SeedUserPW")
-                    ?? ApplicationConstants.TestPassword;
-                await DbInitializer.Initialize(serviceProvider, testUserPw);
+        var applicationName = Configuration["DataProtection:ApplicationName"];
 
-                logger.LogDebug("DB successfully initialized from the MVC layer.");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(
-                    ex,
-                    "An error occurred while creating the database from the MVC layer."
-                );
-            }
+        if (string.IsNullOrWhiteSpace(applicationName))
+        {
+            throw new InvalidOperationException(
+                "DataProtection:ApplicationName is required when running in a container."
+            );
         }
 
-        #endregion
+        services
+            .AddDataProtection()
+            .PersistKeysToFileSystem(new DirectoryInfo(DataProtectionKeysDirectory))
+            .SetApplicationName(applicationName);
     }
+
+    /// <summary>
+    /// Trusts X-Forwarded-For/Proto from a reverse proxy. Configure
+    /// "Hosting:ForwardedHeaders:KnownProxies" with the proxy IPs; when the list
+    /// is empty every source is trusted, which is safe only if the app is
+    /// reachable exclusively through the proxy (e.g. a private Docker network).
+    /// </summary>
+    private void AddForwardedHeaders(IServiceCollection services)
+    {
+        var section = Configuration.GetSection("Hosting:ForwardedHeaders");
+        if (!section.GetValue<bool>("Enabled"))
+        {
+            return;
+        }
+
+        var knownProxies = section.GetSection("KnownProxies").Get<string[]>() ?? [];
+
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders =
+                ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+            options.KnownIPNetworks.Clear();
+            options.KnownProxies.Clear();
+
+            foreach (var proxy in knownProxies)
+            {
+                options.KnownProxies.Add(IPAddress.Parse(proxy));
+            }
+        });
+    }
+
+    /// <summary>
+    /// Fixed-window limit per client IP for authentication endpoints
+    /// (see [EnableRateLimiting] in AccountController).
+    /// </summary>
+    private void AddRateLimiting(IServiceCollection services)
+    {
+        var section = Configuration.GetSection("RateLimiting:Authentication");
+        var permitLimit = section.GetValue("PermitLimit", 10);
+        var window = TimeSpan.FromSeconds(section.GetValue("WindowSeconds", 60));
+
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.AddPolicy(
+                RateLimitPolicyNames.Authentication,
+                httpContext =>
+                    RateLimitPartition.GetFixedWindowLimiter(
+                        httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                        _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = permitLimit,
+                            Window = window,
+                            QueueLimit = 0,
+                        }
+                    )
+            );
+        });
+    }
+
+    /// <summary>
+    /// Cultures from "Localization:DefaultCulture" and
+    /// "Localization:SupportedCultures" (defaults to en-US).
+    /// </summary>
+    private RequestLocalizationOptions CreateLocalizationOptions()
+    {
+        var defaultCulture = Configuration["Localization:DefaultCulture"] ?? "en-US";
+        var cultures = (
+            Configuration.GetSection("Localization:SupportedCultures").Get<string[]>()
+            ?? [defaultCulture]
+        )
+            .Select(name => new CultureInfo(name))
+            .ToList();
+
+        return new RequestLocalizationOptions
+        {
+            DefaultRequestCulture = new RequestCulture(defaultCulture),
+            SupportedCultures = cultures,
+            SupportedUICultures = cultures,
+        };
+    }
+
+    #endregion
 }

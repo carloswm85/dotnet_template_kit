@@ -2,7 +2,7 @@ using CleanArchitectureTemplate.ApplicationCore.Constants;
 using CleanArchitectureTemplate.ApplicationCore.Dtos;
 using CleanArchitectureTemplate.ApplicationCore.Entities;
 using CleanArchitectureTemplate.ApplicationCore.Interfaces;
-using CleanArchitectureTemplate.Infrastructure.Model;
+using CleanArchitectureTemplate.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 

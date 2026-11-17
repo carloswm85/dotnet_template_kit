@@ -47,7 +47,7 @@ public class TestContactAdministratorsAuthorizationHandler
         }
 
         // Administrators can do anything.
-        if (context.User.IsInRole(RoleConstants.AdministratorsRole))
+        if (context.User.IsInRole(RoleNames.Admin))
         {
             context.Succeed(requirement);
         }

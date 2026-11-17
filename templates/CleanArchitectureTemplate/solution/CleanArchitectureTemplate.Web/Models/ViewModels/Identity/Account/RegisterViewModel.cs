@@ -7,24 +7,20 @@ namespace CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account;
 
 public class RegisterViewModel
 {
-    [Required]
+    [Required(ErrorMessage = "First name is required.")]
     [Display(Name = "First name")]
     public string? FirstName { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Last name is required.")]
     [Display(Name = "Last name")]
     public string? LastName { get; set; }
 
-    [Required]
-    [Display(Name = "Username")]
-    public string Username { get; set; } = default!;
-
-    [Required]
-    [EmailAddress]
+    [Required(ErrorMessage = "Email is required.")]
+    [EmailAddress(ErrorMessage = "Enter a valid email address.")]
     [Display(Name = "Email")]
     public string? Email { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Password is required.")]
     [StringLength(
         100,
         MinimumLength = 6,
@@ -36,9 +32,6 @@ public class RegisterViewModel
 
     [DataType(DataType.Password)]
     [Display(Name = "Confirm password")]
-    [Compare(
-        nameof(Password),
-        ErrorMessage = "The password and confirmation password do not match."
-    )]
+    [Compare(nameof(Password), ErrorMessage = "The password and confirmation do not match.")]
     public string? ConfirmPassword { get; set; }
 }

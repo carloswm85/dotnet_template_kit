@@ -1,0 +1,86 @@
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account
+
+@model UserProfileViewModel
+
+@{
+    ViewData["Title"] = "User profile";
+    var profileImagePath = string.IsNullOrWhiteSpace(Model.ImagePath)
+        ? Url.Content("~/images/defaults/default-person.png")
+        : Url.Content(Model.ImagePath);
+    var registrationDate = Model.RegistrationDate?.ToString("dd/MM/yyyy") ?? "Not provided";
+}
+
+<div class="container py-4">
+    <div class="card mx-auto">
+        <div class="card-header p-4 p-md-5">
+            <div class="row g-4 align-items-center">
+                @*
+                <div class="col-12 col-md-auto text-center">
+                    <img src="@profileImagePath"
+                         alt="@Html.DisplayNameFor(model => model.ImagePath) of @Model.FullName"
+                         class="img-thumbnail rounded-circle"
+                         width="144"
+                         height="144"
+                         onerror="this.onerror=null; this.src='@Url.Content("~/images/defaults/error-image.png")';" />
+                </div>
+                *@
+
+                <div class="col text-center text-md-start">
+                    <p class="text-uppercase small fw-semibold mb-1 opacity-75">@ViewData["Title"]</p>
+                    <h1 class="h2 mb-2">@Model.FullName</h1>
+                    <p class="mb-0">
+                        <i class="bi bi-calendar3 me-2" aria-hidden="true"></i>
+                        @Html.DisplayNameFor(model => model.RegistrationDate): @registrationDate
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+            <div class="row g-4">
+                <div class="col-12 col-md-6">
+                    <section class="h-100" aria-labelledby="contact-heading">
+                        <h2 id="contact-heading" class="h5">
+                            <i class="bi bi-person-lines-fill me-2" aria-hidden="true"></i>Contact information
+                        </h2>
+                        <dl class="mb-0">
+                            <dt>@Html.DisplayNameFor(model => model.Email)</dt>
+                            <dd class="text-break">@(Model.Email ?? "Not provided")</dd>
+
+                            <dt>@Html.DisplayNameFor(model => model.PhoneNumber)</dt>
+                            <dd class="mb-0">@(Model.PhoneNumber ?? "Not provided")</dd>
+                        </dl>
+                    </section>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <section class="h-100" aria-labelledby="details-heading">
+                        <h2 id="details-heading" class="h5">
+                            <i class="bi bi-geo-alt-fill me-2" aria-hidden="true"></i>Account details
+                        </h2>
+                        <dl class="mb-0">
+                            <dt>@Html.DisplayNameFor(model => model.City)</dt>
+                            <dd>@(Model.City ?? "Not provided")</dd>
+                        </dl>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer p-3 p-md-4">
+            <!-- BUTTONS -->
+            <div class="d-flex flex-column flex-md-row gap-2">
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="btn btn-outline-secondary flex-grow-1">
+                    <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>Home
+                </a>
+                <a asp-controller="Account"
+                   asp-action="UserProfileEdit"
+                   class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Edit
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

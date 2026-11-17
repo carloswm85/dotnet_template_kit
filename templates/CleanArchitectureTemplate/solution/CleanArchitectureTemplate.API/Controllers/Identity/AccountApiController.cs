@@ -1,16 +1,21 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Mime;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
-using CleanArchitectureTemplate.API.Contracts;
-using CleanArchitectureTemplate.API.Contracts.Identity;
-using CleanArchitectureTemplate.API.Contracts.Identity.IdentityContractDtos;
-using CleanArchitectureTemplate.ApplicationCore.Interfaces.Identity;
-using CleanArchitectureTemplate.Infrastructure.Model.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.WebUtilities;
+using CleanArchitectureTemplate.API.Constants;
+using CleanArchitectureTemplate.API.Contracts;
+using CleanArchitectureTemplate.API.Contracts.Identity;
+using CleanArchitectureTemplate.API.Contracts.Identity.IdentityContractDtos;
+using CleanArchitectureTemplate.ApplicationCore.Constants;
+using CleanArchitectureTemplate.ApplicationCore.Interfaces.Identity;
+using CleanArchitectureTemplate.Infrastructure.Models.Identity;
+using CleanArchitectureTemplate.Infrastructure.Services.Identity;
 
 namespace CleanArchitectureTemplate.API.Controllers.Identity;
 
@@ -78,12 +83,21 @@ public class AccountApiController : ControllerBase
     /// </response>
     [AllowAnonymous]
     [HttpPost("register")]
-    [Consumes("application/json")]
-    [Produces("application/json")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(typeof(UserRegisterResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [EnableRateLimiting(RateLimitPolicyNames.Authentication)]
     public async Task<IActionResult> Register([FromBody] UserRegisterRequest request)
     {
+        const string defaultRole = RoleNames.User;
+
+        if (!await _roleManager.RoleExistsAsync(defaultRole))
+        {
+            _logger.LogError("Default role {RoleName} is required", defaultRole);
+            return BadRequest(new GenericMessageResponse { Message = "User registration failed" });
+        }
+
         var user = new ApplicationUser
         {
             FirstName = request.FirstName,
@@ -106,26 +120,20 @@ public class AccountApiController : ControllerBase
             return BadRequest(new GenericMessageResponse { Message = "User registration failed" });
         }
 
-        const string defaultRole = "User";
-
-        // Ensure role exists
-        if (!await _roleManager.RoleExistsAsync(defaultRole))
-        {
-            _logger.LogError("Default role {RoleName} is required", defaultRole);
-            return BadRequest(new GenericMessageResponse { Message = "User registration failed" });
-        }
-
         // Assign default role
         var roleResult = await _userManager.AddToRoleAsync(user, defaultRole);
 
         if (!roleResult.Succeeded)
         {
             var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+            var deleteResult = await _userManager.DeleteAsync(user);
             _logger.LogError(
-                "Failed to assign role {RoleName} to user {Email}, with errors: {Errors}",
+                "Failed to assign role {RoleName} to user {Email}, with errors: {Errors}. "
+                    + "User cleanup succeeded: {CleanupSucceeded}",
                 defaultRole,
                 request.Email,
-                errors
+                errors,
+                deleteResult.Succeeded
             );
             return BadRequest(new GenericMessageResponse { Message = "Failed to assign role" });
         }
@@ -155,7 +163,7 @@ public class AccountApiController : ControllerBase
     // POST: api/AccountApi/login
     //
     /// <summary>
-    /// ⚠️ Partially tested. ✅ Authenticates a user using email and password credentials and issues JWT tokens.
+    /// ✅ Authenticates a user using email and password credentials and issues JWT tokens.
     /// </summary>
     /// <remarks>
     /// Authentication flow:
@@ -201,11 +209,12 @@ public class AccountApiController : ControllerBase
     /// </response>
     [HttpPost("login")]
     [AllowAnonymous]
-    [Consumes("application/json")]
-    [Produces("application/json")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(typeof(UserLoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(GenericMessageResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(GenericMessageResponse), StatusCodes.Status401Unauthorized)]
+    [EnableRateLimiting(RateLimitPolicyNames.Authentication)]
     public async Task<IActionResult> LogIn([FromBody] UserLoginRequest request)
     {
         if (
@@ -230,6 +239,11 @@ public class AccountApiController : ControllerBase
         if (!user.EmailConfirmed)
         {
             return Unauthorized(new GenericMessageResponse { Message = "Email not confirmed" });
+        }
+
+        if (!user.IsActive)
+        {
+            return Unauthorized(new GenericMessageResponse { Message = "Account deactivated" });
         }
 
         // Always validate password first
@@ -306,6 +320,7 @@ public class AccountApiController : ControllerBase
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 RequiresTwoFactor = false,
+                TokenType = TokenTypes.Jwt,
                 User = new UserInformationResponse
                 {
                     Id = user.Id!,
@@ -376,7 +391,8 @@ public class AccountApiController : ControllerBase
         // Validate refresh token FIRST
         var isRefreshTokenValid = await _tokenService.ValidateRefreshTokenAsync(
             userId,
-            request.RefreshToken
+            request.RefreshToken,
+            HttpContext.RequestAborted
         );
 
         if (!isRefreshTokenValid)
@@ -405,7 +421,7 @@ public class AccountApiController : ControllerBase
     /// ✅ Logs out the currently authenticated user from all devices.
     /// </summary>
     /// <remarks>
-    /// Existing access tokens remain valid until expiration unless separately revoked.
+    /// Access and refresh tokens are rejected after the global revocation timestamp.
     /// </remarks>
     /// <response code="200">All user sessions were successfully invalidated.</response>
     /// <response code="401">User is not authenticated.</response>
@@ -463,11 +479,12 @@ public class AccountApiController : ControllerBase
     /// </response>
     [HttpPost("refresh")]
     [AllowAnonymous]
-    [Produces("application/json")]
-    [Consumes("application/json")]
+    [Produces(MediaTypeNames.Application.Json)]
+    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(typeof(UserLoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(UserLoginResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(UserLoginResponse), StatusCodes.Status401Unauthorized)]
+    [EnableRateLimiting(RateLimitPolicyNames.Authentication)]
     public async Task<IActionResult> Refresh([FromBody] UserRefreshTokenRequest request)
     {
         if (string.IsNullOrEmpty(request.RefreshToken) || string.IsNullOrEmpty(request.AccessToken))
@@ -499,7 +516,9 @@ public class AccountApiController : ControllerBase
 
         var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var jti = principal.FindFirst(JwtRegisteredClaimNames.Jti)?.Value; // Unique identifier for a specific json token instance.
-        var iat = principal.FindFirst(JwtRegisteredClaimNames.Iat)?.Value; // "Issued At" - Unix timestamp indicating when the token was created.
+        var iatMilliseconds = principal
+            .FindFirst(TokenService.IssuedAtMillisecondsClaimType)
+            ?.Value;
 
         if (userId == null || jti == null)
             return Unauthorized(
@@ -510,7 +529,7 @@ public class AccountApiController : ControllerBase
                 }
             );
 
-        if (await _tokenService.IsTokenRevokedAsync(jti))
+        if (await _tokenService.IsTokenRevokedAsync(jti, HttpContext.RequestAborted))
             return Unauthorized(
                 new UserLoginResponse
                 {
@@ -520,9 +539,9 @@ public class AccountApiController : ControllerBase
             );
 
         if (
-            !string.IsNullOrEmpty(iat)
-            && long.TryParse(iat, out var issuedAt)
-            && await _tokenService.IsUserRevokedAsync(userId, issuedAt)
+            string.IsNullOrEmpty(iatMilliseconds)
+            || !long.TryParse(iatMilliseconds, out var issuedAt)
+            || await _tokenService.IsUserRevokedAsync(userId, issuedAt, HttpContext.RequestAborted)
         )
             return Unauthorized(
                 new UserLoginResponse
@@ -532,7 +551,13 @@ public class AccountApiController : ControllerBase
                 }
             );
 
-        if (!await _tokenService.ValidateRefreshTokenAsync(userId, request.RefreshToken))
+        if (
+            !await _tokenService.ValidateRefreshTokenAsync(
+                userId,
+                request.RefreshToken,
+                HttpContext.RequestAborted
+            )
+        )
             return Unauthorized(
                 new UserLoginResponse
                 {
@@ -608,7 +633,7 @@ public class AccountApiController : ControllerBase
     /// </response>
     [HttpGet("confirmEmail")]
     [AllowAnonymous]
-    [Produces("application/json")]
+    [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(typeof(GenericMessageResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(GenericMessageResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(GenericMessageResponse), StatusCodes.Status404NotFound)]
@@ -699,6 +724,7 @@ public class AccountApiController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(GenericMessageResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(GenericMessageResponse), StatusCodes.Status400BadRequest)]
+    [EnableRateLimiting(RateLimitPolicyNames.Authentication)]
     public async Task<IActionResult> ResendConfirmationEmail(
         [FromBody] UserResendConfirmationEmailRequest request
     )
@@ -789,6 +815,7 @@ public class AccountApiController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(GenericMessageResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(GenericMessageResponse), StatusCodes.Status400BadRequest)]
+    [EnableRateLimiting(RateLimitPolicyNames.Authentication)]
     public async Task<IActionResult> ForgotPassword([FromBody] UserForgotPasswordRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Email))
@@ -871,6 +898,7 @@ public class AccountApiController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(GenericMessageResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(GenericMessageResponse), StatusCodes.Status400BadRequest)]
+    [EnableRateLimiting(RateLimitPolicyNames.Authentication)]
     public async Task<IActionResult> ResetPassword([FromBody] UserResetPasswordRequest request)
     {
         if (
@@ -1093,17 +1121,14 @@ public class AccountApiController : ControllerBase
                 {
                     var disableResult = await _userManager.SetTwoFactorEnabledAsync(user, false);
 
-                    if (!disableResult.Succeeded)
-                    {
-                        return BadRequest(
+                    return !disableResult.Succeeded
+                        ? BadRequest(
                             new GenericMessageResponse
                             {
                                 Message = "Failed to disable two-factor authentication",
                             }
-                        );
-                    }
-
-                    return Ok(
+                        )
+                        : Ok(
                         new GenericMessageResponse
                         {
                             Message = "Two-factor authentication disabled successfully",

@@ -9,4 +9,5 @@ public class UserLoginResponse
     public UserInformationResponse? User { get; set; }
     public required string Message { get; set; }
     public bool RequiresTwoFactor { get; set; }
+    public string? TokenType { get; set; }
 }

@@ -1,9 +1,9 @@
-﻿@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account
 
 @model SendCodeViewModel
 
 @{
-    ViewData["Title"] = "Send Verification Code";
+    ViewData["Title"] = "Send verification code";
 }
 
 <div class="row justify-content-center">
@@ -13,7 +13,7 @@
                 <h1 class="h4 mb-3">@ViewData["Title"]</h1>
 
                 <p class="text-muted mb-4">
-                    Choose how you would like to receive your two-factor authentication code.
+                    Choose how to receive your two-factor authentication code.
                 </p>
 
                 <form asp-controller="Account"
@@ -22,11 +22,13 @@
                       method="post"
                       role="form">
 
+                    <!-- HIDDEN_FIELDS -->
                     <input asp-for="RememberMe" type="hidden" />
 
+                    <!-- SELECTED_PROVIDER -->
                     <div class="mb-3">
                         <label asp-for="SelectedProvider" class="form-label">
-                            Two-Factor Authentication Provider
+                            Two-factor authentication provider
                         </label>
 
                         <select asp-for="SelectedProvider"
@@ -38,9 +40,10 @@
                               class="text-danger small"></span>
                     </div>
 
+                    <!-- BUTTONS -->
                     <div class="d-flex justify-content-end">
                         <button type="submit" class="btn btn-primary">
-                            Send Code
+                            Send code
                         </button>
                     </div>
                 </form>

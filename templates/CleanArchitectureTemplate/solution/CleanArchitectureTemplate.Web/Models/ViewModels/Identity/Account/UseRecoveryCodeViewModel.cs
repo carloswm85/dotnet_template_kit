@@ -8,6 +8,7 @@ namespace CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account;
 public class UseRecoveryCodeViewModel
 {
     [Required]
+    [Display(Name = "Recovery code")]
     public string? Code { get; set; }
 
     public string? ReturnUrl { get; set; }

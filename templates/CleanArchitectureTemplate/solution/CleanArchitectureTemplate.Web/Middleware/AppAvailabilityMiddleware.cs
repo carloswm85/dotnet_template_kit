@@ -115,7 +115,7 @@ public sealed class AppAvailabilityMiddleware
 
     private static bool IsSuperAdmin(HttpContext context)
     {
-        return context.User.IsInRole(RoleConstants.SuperAdministratorsRole);
+        return context.User.IsInRole(RoleNames.SuperAdmin);
     }
 
     private static bool ShouldReturnServiceUnavailable(HttpRequest request)

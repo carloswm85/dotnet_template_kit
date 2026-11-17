@@ -8,6 +8,7 @@ namespace CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account;
 public class VerifyAuthenticatorCodeViewModel
 {
     [Required]
+    [Display(Name = "Code")]
     public string Code { get; set; } = default!;
 
     public string? ReturnUrl { get; set; }

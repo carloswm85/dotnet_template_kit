@@ -1,4 +1,4 @@
-using CleanArchitectureTemplate.Infrastructure.Model;
+using CleanArchitectureTemplate.Infrastructure.Models;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace CleanArchitectureTemplate.Web.HealthChecks;

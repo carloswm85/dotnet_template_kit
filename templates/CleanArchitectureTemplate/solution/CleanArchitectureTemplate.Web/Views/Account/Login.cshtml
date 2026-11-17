@@ -1,16 +1,37 @@
-﻿@using CleanArchitectureTemplate.Infrastructure.Model.Identity
+@using CleanArchitectureTemplate.Infrastructure.Models.Identity
 @using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Account
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Hosting
 
 @model LoginViewModel
+
 @inject SignInManager<ApplicationUser> SignInManager
+@inject IWebHostEnvironment hostEnvironment
 
 @{
     ViewData["Title"] = "Log in";
+    string? message = ViewData["Message"] as string;
 }
 
-<div class="row justify-content-center">
+<div class="row justify-content-center m-lg-4">
     <div class="col-lg-6">
         <div class="card shadow-sm mb-4">
+            @if (!string.IsNullOrWhiteSpace(message))
+            {
+                <!-- BUTTONS -->
+                <div id="loginMessage"
+                     class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-0 rounded-top border-0"
+                     data-auto-dismiss-ms="10000"
+                     role="status">
+                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                    <span>@message</span>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert"
+                            aria-label="Close"></button>
+                </div>
+            }
+
             <div class="card-body p-4">
                 <h1 class="h4 mb-3">@ViewData["Title"]</h1>
                 <p class="text-muted mb-4">Use a local account to log in.</p>
@@ -25,6 +46,7 @@
 
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
+                    <!-- EMAIL -->
                     <div class="mb-3">
                         <label asp-for="Email" class="form-label"></label>
                         <input asp-for="Email"
@@ -34,13 +56,34 @@
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password"
-                               class="form-control"
-                               autocomplete="current-password" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
+                        <label asp-for="Password"
+                               class="form-label"></label>
+
+                        <!-- PASSWORD -->
+                        <!-- BUTTONS -->
+                        <div class="input-group">
+                            <input asp-for="Password"
+                                   id="passwordInput"
+                                   type="password"
+                                   class="form-control"
+                                   autocomplete="new-password" />
+
+                            <button class="btn btn-outline-secondary"
+                                    type="button"
+                                    data-password-toggle
+                                    data-target="#passwordInput"
+                                    aria-label="Show password">
+
+                                <i class="bi bi-eye"></i>
+
+                            </button>
+                        </div>
+
+                        <span asp-validation-for="Password"
+                              class="text-danger"></span>
                     </div>
 
+                    <!-- REMEMBER_ME -->
                     <div class="form-check mb-3">
                         <input asp-for="RememberMe" class="form-check-input" />
                         <label asp-for="RememberMe" class="form-check-label">
@@ -50,6 +93,7 @@
 
                     <hr />
 
+                    <!-- BUTTONS -->
                     <div class="d-grid mb-3">
                         <button type="submit" class="btn btn-primary">
                             Log in
@@ -69,55 +113,64 @@
         </div>
     </div>
 
-    <div class="col-lg-4">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h2 class="h5 mb-3">External login</h2>
+    @if (hostEnvironment.IsDevelopment())
+    {
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-3">External login</h2>
 
-                @{
-                    var schemes = await SignInManager.GetExternalAuthenticationSchemesAsync();
-                    var loginProviders = schemes.ToList();
+                    @{
+                        var schemes = await SignInManager.GetExternalAuthenticationSchemesAsync();
+                        var loginProviders = schemes.ToList();
 
-                    if (loginProviders.Count == 0)
-                    {
-                        <div class="alert alert-secondary small">
-                            No external authentication services are configured.
-                            See
-                            <a href="http://go.microsoft.com/fwlink/?LinkID=532715" target="_blank" rel="noopener">
-                                this article
-                            </a>
-                            for details on setting up this ASP.NET application.
-                        </div>
-                    }
-                    else
-                    {
-                        <form asp-controller="Account"
-                              asp-action="ExternalLogin"
-                              asp-route-returnurl="@ViewData["ReturnUrl"]"
-                              method="post">
-
-                            <div class="d-grid gap-2">
-                                @foreach (var provider in loginProviders)
-                                {
-                                    <button type="submit"
-                                            class="btn btn-outline-secondary"
-                                            name="provider"
-                                            value="@provider.Name"
-                                            title="Log in using your @provider.Name account">
-                                        Continue with @provider.Name
-                                    </button>
-                                }
+                        if (loginProviders.Count == 0)
+                        {
+                            <div class="alert alert-secondary small">
+                                There are no external authentication services configured.
+                                See
+                                <a href="http://go.microsoft.com/fwlink/?LinkID=532715"
+                                   target="_blank"
+                                   rel="noopener">
+                                    this article
+                                    <i class="bi bi-box-arrow-in-up-right" aria-hidden="true"></i>
+                                </a>
+                                for details on setting up this ASP.NET application.
                             </div>
-                        </form>
+                        }
+                        else
+                        {
+                            <form asp-controller="Account"
+                                  asp-action="ExternalLogin"
+                                  asp-route-returnurl="@ViewData["ReturnUrl"]"
+                                  method="post">
+
+                                <!-- BUTTONS -->
+                                <div class="d-grid gap-2">
+                                    @foreach (var provider in loginProviders)
+                                    {
+                                        <button type="submit"
+                                                class="btn btn-outline-secondary"
+                                                name="provider"
+                                                value="@provider.Name"
+                                                title="Log in using your @provider.Name account">
+                                            Continue with @provider.Name
+                                        </button>
+                                    }
+                                </div>
+                            </form>
+                        }
                     }
-                }
+                </div>
             </div>
         </div>
-    </div>
+    }
 </div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script type="module" src="~/js/forms.js"></script>
 }

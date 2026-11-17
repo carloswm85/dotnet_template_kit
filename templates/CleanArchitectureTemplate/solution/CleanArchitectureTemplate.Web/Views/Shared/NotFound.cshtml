@@ -1,27 +1,68 @@
-﻿@{
-    ViewData["Title"] = "Not Found";
+@{
+    ViewData["Title"] = "Not found";
 }
 
-<div class="container mt-5">
-    <div class="text-center">
-        <h1 class="display-1 text-danger">404</h1>
-        <h2 class="mb-4">@ViewBag.ErrorTitle</h2>
-        <p class="lead mb-4">@ViewBag.ErrorMessage</p>
+<div class="container py-4 py-md-5">
+    <div class="row justify-content-center align-items-center min-vh-75">
+        <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header border-0 bg-danger text-white text-center py-4">
+                    <i class="bi bi-exclamation-triangle-fill display-4"></i>
+                </div>
 
-        @if (ViewBag.OriginalPath != null)
-        {
-            <p class="text-muted">
-                <small>Requested path: @ViewBag.OriginalPath@ViewBag.OriginalQueryString</small>
-            </p>
-        }
+                <div class="card-body text-center p-4 p-md-5">
+                    <h1 class="display-5 fw-bold text-danger mb-3">404</h1>
+                    <h2 class="h3 mb-2">@(ViewBag.ErrorTitle ?? "Not found")</h2>
+                    <p class="h5 text-body-secondary fw-normal mb-3">
+                        @(ViewBag.Subtitle ?? "Not Found")
+                    </p>
+                    <p class="lead text-body-secondary mb-3 text-break">
+                        @(ViewBag.ErrorMessage ?? "The requested resource was not found.")
+                    </p>
 
-        <div class="mt-4">
-            <a asp-controller="Home" asp-action="Index" class="btn btn-primary me-2">
-                <i class="bi bi-house-door"></i> Go Home
-            </a>
-            <a href="javascript:history.back()" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Go Back
-            </a>
+                    @if (ViewBag.OriginalPath != null)
+                    {
+                        <div class="alert alert-light border text-start text-break mb-4 text-center"
+                             role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Requested path: @ViewBag.OriginalPath@ViewBag.OriginalQueryString
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(ViewBag.ErrorDetail as string))
+                    {
+                        <div class="alert alert-light border text-start text-break mb-4 text-center"
+                             role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            @ViewBag.ErrorDetail
+                        </div>
+                    }
+
+                    <div class="d-grid d-sm-flex justify-content-sm-center gap-2">
+                        <a asp-controller="Home"
+                           asp-action="Index"
+                           class="btn btn-primary btn-lg px-4">
+                            <i class="bi bi-house-door-fill me-2"></i>
+                            Go to home
+                        </a>
+                        <a href="javascript:history.back()" class="btn btn-secondary btn-lg px-4">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Back
+                        </a>
+                    </div>
+                </div>
+
+                @if (ViewBag.ErrorId != null)
+                {
+                    <div class="card-footer border-0 bg-body-tertiary text-center py-3">
+                        <small class="text-body-secondary">
+                            <i class="bi bi-fingerprint me-1"></i>
+                            Error ID:
+                            <code>@ViewBag.ErrorId</code>
+                        </small>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </div>

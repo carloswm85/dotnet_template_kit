@@ -1,0 +1,123 @@
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Identity
+
+@model RoleViewModel
+
+@{
+    ViewData["Title"] = "Delete role";
+}
+
+<div class="card col-12 col-xl-9 mx-auto my-3">
+    <div class="card-header pb-3">
+        <h3 class="fw-normal text-danger my-3">
+            <i class="bi bi-shield-x me-2"></i>@ViewData["Title"]
+        </h3>
+    </div>
+
+    <div class="card-body">
+
+            <!-- Danger alert -->
+            <div class="alert alert-danger border-danger shadow-sm" role="alert">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+                    <div>
+                        <h4 class="alert-heading mb-1">Confirm role deletion</h4>
+                        <p class="mb-0">
+                            Are you sure you want to delete this role? This action cannot be undone.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROLE_INFORMATION -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-shield-x me-2"></i>Role information
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <div class="row g-3">
+
+                        <div class="col-12">
+                            <div class="border-start border-danger border-4 ps-3">
+                                <h6 class="text-muted mb-1">Role name</h6>
+                                <p class="mb-0 fw-semibold">@Model.Name</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="border-start border-danger border-4 ps-3">
+                                <h6 class="text-muted mb-1">Public</h6>
+                                <span class="badge @(Model.IsPublic ? "bg-success" : "bg-secondary")">
+                                    <i class="bi @(Model.IsPublic ? "bi-check-circle" : "bi-x-circle") me-1"></i>
+                                    @(Model.IsPublic ? "Yes" : "No")
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="border-start border-danger border-4 ps-3">
+                                <h6 class="text-muted mb-1">Default</h6>
+                                <span class="badge @(Model.IsDefault ? "bg-info text-dark" : "bg-secondary")">
+                                    <i class="bi @(Model.IsDefault ? "bi-star-fill" : "bi-star") me-1"></i>
+                                    @(Model.IsDefault ? "Yes" : "No")
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="border-start border-danger border-4 ps-3">
+                                <h6 class="text-muted mb-1">Static</h6>
+                                <span class="badge @(Model.IsStatic ? "bg-warning text-dark" : "bg-secondary")">
+                                    <i class="bi @(Model.IsStatic ? "bi-lock-fill" : "bi-unlock") me-1"></i>
+                                    @(Model.IsStatic ? "Yes" : "No")
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info card -->
+            <div class="card border-warning mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-info-circle-fill text-warning fs-4 me-3 mt-1"></i>
+                        <div>
+                            <h6 class="mb-2">What happens when this role is deleted?</h6>
+                            <ul class="mb-0 small">
+                                <li>The role is permanently deleted</li>
+                                <li>Users assigned to this role lose it</li>
+                                <li>Permissions tied to the role stop applying</li>
+                                <li>This action cannot be reverted</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BUTTONS -->
+            <form asp-action="RoleDelete" method="post">
+                <!-- HIDDEN_FIELDS -->
+                <input type="hidden" asp-for="Id" />
+
+                <div class="card">
+                    <div class="card-body">
+                        <!-- BUTTONS -->
+                        <div class="d-flex flex-column flex-md-row gap-2">
+                            <a asp-action="RoleList"
+                               class="btn btn-outline-secondary btn-lg flex-grow-1">
+                                <i class="bi bi-arrow-left me-2"></i>No, keep the role
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-lg flex-grow-1">
+                                <i class="bi bi-trash me-2"></i>Yes, delete the role
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+    </div>
+</div>

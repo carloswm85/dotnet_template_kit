@@ -1,0 +1,244 @@
+@using CleanArchitectureTemplate.ApplicationCore.Constants
+@using CleanArchitectureTemplate.Web.Models.ViewModels.Identity.Identity
+
+@model UserViewModel
+
+@{
+    ViewData["Title"] = "Create user";
+}
+
+<div class="card col-12 col-xl-10 mx-auto my-3">
+    <div class="card-header pb-3">
+        <h3 class="fw-normal my-3">
+            <i class="bi bi-person-plus me-2"></i>@ViewData["Title"]
+        </h3>
+    </div>
+
+    <div class="card-body">
+
+        <form asp-action="UserCreate" method="post" enctype="multipart/form-data">
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+
+            <div class="alert alert-info d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="bi bi-key-fill"></i>
+                <div>
+                    <strong>Initial password:</strong> the new user receives the password:
+                    <code>@ApplicationConstants.TestPassword</code>
+                </div>
+            </div>
+
+            <!-- HIDDEN_FIELDS -->
+            <input type="hidden" asp-for="Id" value="00000000-0000-0000-0000-000000000000" />
+
+            <!-- ===================== BASIC INFORMATION ===================== -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Basic information
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <!-- USER_NAME -->
+                            <div class="mb-3">
+                                <label asp-for="UserName" class="form-label fw-semibold">
+                                    Username <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="UserName"
+                                       class="form-control"
+                                       placeholder="Enter the username" />
+                                <span asp-validation-for="UserName"
+                                      class="text-danger small"></span>
+                            </div>
+
+                            <!-- IS_ACTIVE -->
+                            <div class="form-check form-switch mt-3">
+                                <input asp-for="IsActive" class="form-check-input" />
+                                <label asp-for="IsActive"
+                                       class="form-check-label fw-semibold"></label>
+                            </div>
+                            <small class="text-muted d-block mt-1">The user can log in immediately</small>
+                        </div>
+
+                        <div class="col-md-6 text-center">
+                            <!-- Image Preview (Default or Existing) -->
+                            <div>
+                                <div class="mb-3">
+                                    <img id="previewImage"
+                                         src="@(string.IsNullOrEmpty(Model?.ImagePath)
+                                            ? Url.Content("~/images/defaults/default-person.png")
+                                            : Url.Content(Model.ImagePath))"
+                                         alt="User profile"
+                                         class="img-thumbnail"
+                                         style="max-width: 150px;" />
+                                </div>
+
+                                <!-- IMAGE -->
+                                <div class="text-start">
+                                    <label class="form-label fw-semibold">Add user image</label>
+                                    <input asp-for="Image"
+                                           type="file"
+                                           class="form-control"
+                                           accept="image/*"
+                                           onchange="previewFile(event)" />
+                                    <span asp-validation-for="Image"
+                                          class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <!-- FIRST_NAME -->
+                        <div class="col-md-6">
+                            <label asp-for="FirstName" class="form-label fw-semibold">
+                                First name <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="FirstName"
+                                   class="form-control"
+                                   placeholder="Enter the first name" />
+                            <span asp-validation-for="FirstName" class="text-danger small"></span>
+                        </div>
+
+                        <!-- LAST_NAME -->
+                        <div class="col-md-6">
+                            <label asp-for="LastName" class="form-label fw-semibold">
+                                Last name <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="LastName"
+                                   class="form-control"
+                                   placeholder="Enter the last name" />
+                            <span asp-validation-for="LastName" class="text-danger small"></span>
+                        </div>
+
+                        <!-- CITY -->
+                        <div class="col-md-6">
+                            <label asp-for="City" class="form-label fw-semibold">
+                                City <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="City"
+                                   class="form-control"
+                                   placeholder="Enter the city" />
+                            <span asp-validation-for="City" class="text-danger small"></span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===================== CONTACT INFORMATION ===================== -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-envelope me-2"></i>Contact information
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <div class="row g-3">
+
+                        <!-- EMAIL -->
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label fw-semibold">
+                                Email <span class="text-danger">*</span>
+                            </label>
+
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-envelope"></i>
+                                </span>
+                                <input asp-for="Email"
+                                       type="email"
+                                       class="form-control"
+                                       placeholder="user@example.com" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <!-- EMAIL_CONFIRMED -->
+                        <div class="col-md-6 d-flex flex-column justify-content-center">
+                            <div class="form-check form-switch mt-3">
+                                <input asp-for="EmailConfirmed" class="form-check-input" />
+                                <label asp-for="EmailConfirmed"
+                                       class="form-check-label fw-semibold"></label>
+                            </div>
+                            <small class="text-muted mt-1">Not recommended</small>
+                        </div>
+
+                        <!-- PHONE_NUMBER -->
+                        <div class="col-md-6">
+                            <label asp-for="PhoneNumber" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-telephone"></i>
+                                </span>
+                                <input asp-for="PhoneNumber"
+                                       type="tel"
+                                       class="form-control"
+                                       placeholder="+1 (555) 123-4567" />
+                            </div>
+                            <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===================== FOOTER ===================== -->
+            <div class="card">
+                <div class="card-body d-flex flex-column flex-lg-row gap-2 align-items-lg-center py-3">
+
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Fields marked with <span class="text-danger">*</span> are required
+                    </small>
+
+                    <!-- BUTTONS -->
+                    <div class="d-flex flex-column flex-md-row gap-2 ms-lg-auto">
+                        <a asp-action="UserList"
+                           class="btn btn-lg btn-outline-secondary flex-grow-1">
+                            <i class="bi bi-x-lg me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-lg btn-primary flex-grow-1">
+                            <i class="bi bi-check-lg me-1"></i>Create user
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        function previewFile(event) {
+            const input = event.target;
+            const preview = document.getElementById('previewImage');
+
+            if (input.files && input.files[0]) {
+                preview.src = URL.createObjectURL(input.files[0]);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const img = document.getElementById("previewImage");
+
+            if (img) {
+                img.addEventListener("error", function() {
+                    this.src = '/images/defaults/default-person.png';
+                });
+            }
+        });
+    </script>
+}

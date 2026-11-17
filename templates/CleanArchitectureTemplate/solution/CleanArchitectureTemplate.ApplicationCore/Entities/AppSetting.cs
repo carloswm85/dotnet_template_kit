@@ -31,10 +31,10 @@ public class AppSetting
     public string Description { get; set; } = string.Empty;
 
     [Required]
-    [StringLength(50)]
+    [StringLength(500)]
     public string Value { get; set; } = string.Empty;
 
-    [StringLength(50)]
+    [StringLength(500)]
     public string? PreviousValue { get; set; }
 
     [StringLength(450)]

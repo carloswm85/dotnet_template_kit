@@ -1,8 +1,8 @@
 using CleanArchitectureTemplate.ApplicationCore.Constants;
 using CleanArchitectureTemplate.ApplicationCore.Entities;
 using CleanArchitectureTemplate.ApplicationCore.Entities.ContosoUniversity;
-using CleanArchitectureTemplate.Infrastructure.Model;
-using CleanArchitectureTemplate.Infrastructure.Model.Identity;
+using CleanArchitectureTemplate.Infrastructure.Models;
+using CleanArchitectureTemplate.Infrastructure.Models.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +36,7 @@ public static class DbInitializer
         await EnsureRole(
             serviceProvider,
             superID,
-            [RoleConstants.SuperAdministratorsRole, RoleConstants.UsersRole],
+            [RoleNames.SuperAdmin, RoleNames.User],
             false,
             false,
             true
@@ -47,7 +47,7 @@ public static class DbInitializer
         await EnsureRole(
             serviceProvider,
             adminID,
-            [RoleConstants.AdministratorsRole, RoleConstants.UsersRole],
+            [RoleNames.Admin, RoleNames.User],
             false,
             false,
             true
@@ -58,7 +58,7 @@ public static class DbInitializer
         await EnsureRole(
             serviceProvider,
             managerID,
-            [RoleConstants.ManagersRole, RoleConstants.UsersRole],
+            [RoleNames.Manager, RoleNames.User],
             false,
             false,
             false
@@ -66,7 +66,7 @@ public static class DbInitializer
 
         // Registered users can view all the approved data and can edit/delete their own data.
         var userID = await EnsureUser(serviceProvider, testUserPw, "user@email.com");
-        await EnsureRole(serviceProvider, userID, [RoleConstants.UsersRole], true, false, true);
+        await EnsureRole(serviceProvider, userID, [RoleNames.User], true, false, true);
 
         await SeedDB(dbContext, userID, managerID, adminID);
     }
@@ -172,6 +172,12 @@ public static class DbInitializer
                 throw new Exception(
                     "User not found. The testUserPw password was probably not strong enough!"
                 );
+            }
+
+            // Idempotent: a previous, interrupted seed may already have added it.
+            if (await userManager.IsInRoleAsync(user, role))
+            {
+                continue;
             }
 
             operationResult = await userManager.AddToRoleAsync(user, role);

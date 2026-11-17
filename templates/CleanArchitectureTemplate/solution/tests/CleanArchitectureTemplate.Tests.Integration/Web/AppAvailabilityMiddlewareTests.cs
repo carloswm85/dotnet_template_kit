@@ -22,7 +22,7 @@ public class AppAvailabilityMiddlewareTests
         appSettings
             .Setup(service => service.GetSingleUncached(AppSettingConstants.IsAppOnline))
             .Throws(new Win32Exception(258));
-        var context = CreateContext(RoleConstants.AdministratorsRole);
+        var context = CreateContext(RoleNames.Admin);
         var middleware = CreateMiddleware(_ => Task.CompletedTask);
 
         await Assert.ThrowsAsync<Win32Exception>(
@@ -34,7 +34,7 @@ public class AppAvailabilityMiddlewareTests
     public async Task InvokeAsync_AppOfflineAndSuperAdminRequest_AllowsRequest()
     {
         var appSettings = new Mock<IAppSettingService>(MockBehavior.Strict);
-        var context = CreateContext(RoleConstants.SuperAdministratorsRole);
+        var context = CreateContext(RoleNames.SuperAdmin);
         bool nextCalled = false;
         var middleware = CreateMiddleware(_ =>
         {
@@ -58,7 +58,7 @@ public class AppAvailabilityMiddlewareTests
         appSettings
             .Setup(service => service.GetSingleUncached(AppSettingConstants.IsAppOnline))
             .Returns(CreateAvailabilitySetting("false"));
-        var context = CreateContext(RoleConstants.AdministratorsRole);
+        var context = CreateContext(RoleNames.Admin);
         bool nextCalled = false;
         var middleware = CreateMiddleware(_ =>
         {
