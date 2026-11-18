@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageType>Template</PackageType>
-    <PackageVersion>2.0</PackageVersion>
+    <PackageVersion>2.1</PackageVersion>
     <PackageId>DotNetTemplateKit</PackageId>
     <Title>DotNet Template Kit</Title>
     <Authors>Carlos Mercado</Authors>

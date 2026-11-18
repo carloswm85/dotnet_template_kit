@@ -45,6 +45,37 @@
             "description": "Include explanatory documentation",
             "datatype": "bool",
             "defaultValue": "false"
+        },
+        "Hosts": {
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "Both",
+            "choices": [
+                {
+                    "choice": "Both",
+                    "displayName": "API and Web",
+                    "description": "Generate the API and the Web projects."
+                },
+                {
+                    "choice": "API",
+                    "displayName": "API only",
+                    "description": "Generate only the REST API project."
+                },
+                {
+                    "choice": "Web",
+                    "displayName": "Web only",
+                    "description": "Generate only the MVC Web project. Set ApiBaseUrl to an external API."
+                }
+            ],
+            "description": "The host projects to generate: API, Web, or Both."
+        },
+        "IncludeApi": {
+            "type": "computed",
+            "value": "(Hosts == \"API\" || Hosts == \"Both\")"
+        },
+        "IncludeWeb": {
+            "type": "computed",
+            "value": "(Hosts == \"Web\" || Hosts == \"Both\")"
         }
     },
     "sources": [
@@ -66,9 +97,45 @@
                 "**/appsettings.Development.json",
                 "**/DataProtection-Keys/**",
                 "**/wwwroot/uploads/**"
+            ],
+            "modifiers": [
+                {
+                    "condition": "(!IncludeApi)",
+                    "exclude": [
+                        "solution/CleanArchitectureTemplate.API/**",
+                        "solution/tests/CleanArchitectureTemplate.Tests.Integration/API/**"
+                    ]
+                },
+                {
+                    "condition": "(!IncludeWeb)",
+                    "exclude": [
+                        "solution/CleanArchitectureTemplate.Web/**",
+                        "solution/tests/CleanArchitectureTemplate.Tests.Integration/Web/**",
+                        "solution/tests/CleanArchitectureTemplate.Tests.Integration/Controllers/**",
+                        "solution/tests/CleanArchitectureTemplate.Tests.Integration/IntegrationWebApplicationFactory.cs"
+                    ]
+                }
             ]
         }
     ],
+    "SpecialCustomOperations": {
+        "**/.env.example": {
+            "operations": [
+                {
+                    "type": "conditional",
+                    "configuration": {
+                        "if": ["#if"],
+                        "else": ["#else"],
+                        "elseif": ["#elseif"],
+                        "endif": ["#endif"],
+                        "trim": "true",
+                        "wholeLine": "true",
+                        "evaluator": "C++"
+                    }
+                }
+            ]
+        }
+    },
     "primaryOutputs": [
         {
             "path": "./CleanArchitectureTemplate.slnx"
@@ -80,7 +147,7 @@
             "description": "Restore NuGet packages",
             "continueOnError": true,
             "args": {
-                "files": "./SimpleMonolithTemplate.sln"
+                "files": "./CleanArchitectureTemplate.slnx"
             },
             "manualInstructions": [
                 {

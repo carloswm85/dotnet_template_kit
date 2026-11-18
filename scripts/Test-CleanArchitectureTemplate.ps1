@@ -1,33 +1,44 @@
 function Test-CleanArchitectureTemplate {
     <#
     @desc   Smoke-tests the DTK Clean Architecture template: installs it from
-            this repository, generates a solution under a different name,
-            then builds it, runs the unit tests and checks that no
-            "CleanArchitectureTemplate" text survived the rename.
+            this repository and, for each host mode (API, Web, Both),
+            generates a solution under a different name, builds it, runs the
+            unit and integration tests, checks that only the selected host
+            projects exist, and checks that no "CleanArchitectureTemplate"
+            text survived the rename.
     @alias  tcat
     .PARAMETER Name
         Solution name for the generated project (replaces the sourceName).
+    .PARAMETER Hosts
+        Host modes to test. Defaults to all three: API, Web and Both.
     .PARAMETER OutputRoot
-        Folder for the generated solution. Defaults to a new temp folder.
+        Folder for the generated solutions. Defaults to a new temp folder.
+    .PARAMETER SkipIntegrationTests
+        Skip the integration tests (they need LocalDB on Windows, or Docker).
     .PARAMETER Keep
-        Keep the generated solution and the template installation.
+        Keep the generated solutions and the template installation.
     .EXAMPLE
         ./scripts/Test-CleanArchitectureTemplate.ps1
     .EXAMPLE
-        . ./scripts/Test-CleanArchitectureTemplate.ps1; tcat -Name Acme.Shop -Keep
+        . ./scripts/Test-CleanArchitectureTemplate.ps1
+        tcat -Hosts Web -Name Acme.Shop -Keep
     #>
     [CmdletBinding()]
     param(
         [string] $Name = 'Acme.Sample',
-        [string] $OutputRoot = (Join-Path ([IO.Path]::GetTempPath()) "dtk-smoke-$([guid]::NewGuid().ToString('N'))"),
+        [ValidateSet('API', 'Web', 'Both')]
+        [string[]] $Hosts = @('API', 'Web', 'Both'),
+        [string] $OutputRoot = (Join-Path ([IO.Path]::GetTempPath()) `
+                "dtk-smoke-$([guid]::NewGuid().ToString('N'))"),
+        [switch] $SkipIntegrationTests,
         [switch] $Keep
     )
 
     Set-StrictMode -Version Latest
     $ErrorActionPreference = 'Stop'
 
-    $templatePath = Join-Path $PSScriptRoot '..\templates\CleanArchitectureTemplate' | Resolve-Path
-    $outputPath = Join-Path $OutputRoot $Name
+    $templatePath = Join-Path $PSScriptRoot '..\templates\CleanArchitectureTemplate' |
+        Resolve-Path
     $failures = [System.Collections.Generic.List[string]]::new()
 
     function Invoke-Step([string] $Title, [scriptblock] $Action) {
@@ -35,6 +46,41 @@ function Test-CleanArchitectureTemplate {
         & $Action
         if ($LASTEXITCODE -ne 0) {
             throw "$Title failed (exit code $LASTEXITCODE)."
+        }
+    }
+
+    function Test-HostLayout([string] $Mode, [string] $OutputPath) {
+        $expected = @{
+            API  = @{ API = $true; Web = $false }
+            Web  = @{ API = $false; Web = $true }
+            Both = @{ API = $true; Web = $true }
+        }[$Mode]
+
+        $solutionText = Get-Content (Join-Path $OutputPath "$Name.slnx") -Raw
+
+        foreach ($hostName in 'API', 'Web') {
+            $project = "$Name.$hostName"
+            $exists = Test-Path (Join-Path $OutputPath "solution\$project")
+            $inSolution = $solutionText -match [regex]::Escape("$project.csproj")
+
+            if ($exists -ne $expected[$hostName]) {
+                $failures.Add("[$Mode] Project folder $project exists: $exists")
+            }
+            if ($inSolution -ne $expected[$hostName]) {
+                $failures.Add("[$Mode] $project in solution: $inSolution")
+            }
+        }
+
+        # C# files are skipped: `#if` there is a compiler directive.
+        $leftoverDirectives = Get-ChildItem $OutputPath -Recurse -File |
+            Where-Object {
+                $_.FullName -notmatch '[\\/](bin|obj|lib)[\\/]' -and
+                $_.Extension -ne '.cs'
+            } |
+            Select-String -Pattern '^\s*(//|<!--)?\s*#(if|elseif|else|endif)\b' -List
+        foreach ($hit in $leftoverDirectives) {
+            $failures.Add(
+                "[$Mode] Template directive left in $($hit.Path):$($hit.LineNumber)")
         }
     }
 
@@ -53,37 +99,53 @@ function Test-CleanArchitectureTemplate {
             Write-Host '==> Template already installed; using it' -ForegroundColor Cyan
         }
 
-        Invoke-Step 'Generate solution' {
-            dotnet new dtk-clean-architecture --name $Name --output $outputPath
-        }
+        foreach ($mode in $Hosts) {
+            Write-Host "`n### Hosts = $mode" -ForegroundColor Magenta
+            $outputPath = Join-Path $OutputRoot "$mode\$Name"
 
-        $solution = Get-ChildItem $outputPath -Filter '*.slnx' | Select-Object -First 1
-        if (-not $solution) {
-            throw 'No .slnx file was generated.'
-        }
-
-        Invoke-Step 'Build' { dotnet build $solution.FullName -c Release }
-
-        $unitTests = Get-ChildItem $outputPath -Recurse -Filter '*.Tests.Unit.csproj' |
-            Select-Object -First 1
-        if ($unitTests) {
-            Invoke-Step 'Unit tests' {
-                dotnet run --no-build -c Release --project $unitTests.FullName
+            Invoke-Step "[$mode] Generate solution" {
+                dotnet new dtk-clean-architecture --name $Name `
+                    --output $outputPath --Hosts $mode
             }
-        }
 
-        Write-Host '==> Check for leftover template names' -ForegroundColor Cyan
-        $leftovers = Get-ChildItem $outputPath -Recurse -File |
-            Where-Object { $_.FullName -notmatch '[\\/](bin|obj|lib)[\\/]' } |
-            Select-String -Pattern 'CleanArchitectureTemplate' -List
-        foreach ($hit in $leftovers) {
-            $failures.Add("Leftover name in $($hit.Path):$($hit.LineNumber)")
-        }
+            $solution = Get-ChildItem $outputPath -Filter '*.slnx' |
+                Select-Object -First 1
+            if (-not $solution) {
+                throw "[$mode] No .slnx file was generated."
+            }
 
-        $leftoverPaths = Get-ChildItem $outputPath -Recurse |
-            Where-Object { $_.Name -match 'CleanArchitectureTemplate' }
-        foreach ($item in $leftoverPaths) {
-            $failures.Add("Leftover name in path $($item.FullName)")
+            Write-Host "==> [$mode] Check host projects" -ForegroundColor Cyan
+            Test-HostLayout $mode $outputPath
+
+            Invoke-Step "[$mode] Build" { dotnet build $solution.FullName -c Release }
+
+            # xUnit v3 test projects are executables; `dotnet run` executes
+            # every test and fails when one fails.
+            $testProjects = @(Get-ChildItem $outputPath -Recurse -Filter '*.Tests.Unit.csproj')
+            if (-not $SkipIntegrationTests) {
+                $testProjects += Get-ChildItem $outputPath -Recurse `
+                    -Filter '*.Tests.Integration.csproj'
+            }
+            foreach ($project in $testProjects) {
+                Invoke-Step "[$mode] $($project.BaseName)" {
+                    dotnet run --no-build -c Release --project $project.FullName
+                }
+            }
+
+            Write-Host "==> [$mode] Check for leftover template names" `
+                -ForegroundColor Cyan
+            $leftovers = Get-ChildItem $outputPath -Recurse -File |
+                Where-Object { $_.FullName -notmatch '[\\/](bin|obj|lib)[\\/]' } |
+                Select-String -Pattern 'CleanArchitectureTemplate' -List
+            foreach ($hit in $leftovers) {
+                $failures.Add("[$mode] Leftover name in $($hit.Path):$($hit.LineNumber)")
+            }
+
+            $leftoverPaths = Get-ChildItem $outputPath -Recurse |
+                Where-Object { $_.Name -match 'CleanArchitectureTemplate' }
+            foreach ($item in $leftoverPaths) {
+                $failures.Add("[$mode] Leftover name in path $($item.FullName)")
+            }
         }
     }
     finally {
@@ -97,7 +159,7 @@ function Test-CleanArchitectureTemplate {
             }
         }
         else {
-            Write-Host "Kept: $outputPath" -ForegroundColor Yellow
+            Write-Host "Kept: $OutputRoot" -ForegroundColor Yellow
         }
     }
 
@@ -106,7 +168,8 @@ function Test-CleanArchitectureTemplate {
         throw "$($failures.Count) problem(s) found."
     }
 
-    Write-Host 'Template smoke test passed.' -ForegroundColor Green
+    Write-Host "Template smoke test passed for: $($Hosts -join ', ')." `
+        -ForegroundColor Green
 }
 
 Set-Alias -Name tcat -Value Test-CleanArchitectureTemplate

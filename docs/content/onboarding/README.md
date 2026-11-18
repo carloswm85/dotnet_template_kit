@@ -1,4 +1,4 @@
-- [Basic Ntier Template](#basic-ntier-template)
+- [DotNet Template Kit](#dotnet-template-kit)
   - [Version compatibility](#version-compatibility)
     - [Table: .NET Core](#table-net-core)
     - [Table: Identity API](#table-identity-api)
@@ -16,9 +16,9 @@
 
 ---
 
-# Basic Ntier Template
+# DotNet Template Kit
 
-<https://github.com/carloswm85/basic-ntier-template>
+<https://github.com/carloswm85/dotnet-template-kit>
 
 ## Version compatibility
 

@@ -1,4 +1,5 @@
 services:
+#if (IncludeWeb)
   cleanarchitecturetemplate.web:
     image: ${DOCKER_REGISTRY-}cleanarchitecturetemplateweb
     build:
@@ -14,7 +15,12 @@ services:
       ASPNETCORE_URLS: "http://+:8080"
       DataProtection__ApplicationName: ${DataProtection__ApplicationName:?Set DataProtection__ApplicationName in .env}
       Uploads__RootPath: "/app/uploads"
+#if (IncludeApi)
       ApiBaseUrl: "http://cleanarchitecturetemplate.api:8080"
+#else
+      # Web-only solution: base URL of the external API the Web app calls.
+      ApiBaseUrl: ${API_BASE_URL:?Set API_BASE_URL in .env}
+#endif
     ports:
       - "8080:8080"
     volumes:
@@ -23,6 +29,8 @@ services:
       # Persists uploaded images (ImageStorageService).
       - uploads:/app/uploads
 
+#endif
+#if (IncludeApi)
   cleanarchitecturetemplate.api:
     image: ${DOCKER_REGISTRY-}cleanarchitecturetemplateapi
     build:
@@ -45,6 +53,7 @@ services:
     volumes:
       - api_dataprotection_keys:/app/DataProtection-Keys
 
+#endif
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: cleanarchitecturetemplate-sqlserver
@@ -68,6 +77,10 @@ services:
 
 volumes:
   sqlserver_data:
+#if (IncludeWeb)
   dataprotection_keys:
-  api_dataprotection_keys:
   uploads:
+#endif
+#if (IncludeApi)
+  api_dataprotection_keys:
+#endif

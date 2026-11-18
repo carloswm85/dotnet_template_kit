@@ -1,5 +1,9 @@
 services:
+#if (IncludeWeb)
   cleanarchitecturetemplate.web:
+#else
+  cleanarchitecturetemplate.api:
+#endif
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080

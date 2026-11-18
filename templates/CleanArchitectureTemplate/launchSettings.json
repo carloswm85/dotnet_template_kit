@@ -4,7 +4,11 @@
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
       "serviceActions": {
+        //#if (IncludeWeb)
         "cleanarchitecturetemplate.web": "StartDebugging"
+        //#else
+        "cleanarchitecturetemplate.api": "StartDebugging"
+        //#endif
       }
     }
   }

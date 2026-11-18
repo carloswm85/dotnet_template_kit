@@ -1,5 +1,7 @@
 - [CleanArchitectureTemplate Solution](#cleanarchitecturetemplate-solution)
   - [(s1) First-run setup](#s1-first-run-setup)
+    - [(s1.1) Host selection](#s11-host-selection)
+      - [(s1.1.1) Web-only: external API configuration](#s111-web-only-external-api-configuration)
   - [(s2) Configuration reference](#s2-configuration-reference)
   - [(s3) Operations](#s3-operations)
   - [(s4) Development tooling](#s4-development-tooling)
@@ -32,6 +34,7 @@ Local configuration files are not committed. Each one has a committed
    $projects = "Web", "API"
    foreach ($p in $projects) {
        $dir = "solution/CleanArchitectureTemplate.$p"
+       if (-not (Test-Path $dir)) { continue } # host not generated
        Copy-Item "$dir/appsettings.Development.example.json" `
            "$dir/appsettings.Development.json"
    }
@@ -53,6 +56,44 @@ Local configuration files are not committed. Each one has a committed
 `.env` and `appsettings.Development.json` are ignored by Git and excluded
 from the template package.
 
+### (s1.1) Host selection
+
+The `--Hosts` option chooses which host projects are generated.
+ApplicationCore, Infrastructure, and the test projects are always included.
+
+| `--Hosts` | Projects            | Docker Compose services   | Integration tests              |
+| --------- | ------------------- | ------------------------- | ------------------------------ |
+| `Both`    | API + Web (default) | Web, API, SQL Server      | All                            |
+| `API`     | API                 | API, SQL Server           | API and shared service tests   |
+| `Web`     | Web                 | Web, SQL Server           | Web and shared service tests   |
+
+```powershell
+# [cb10]
+dotnet new dtk-clean-architecture --name Contoso.Api --Hosts API
+dotnet new dtk-clean-architecture --name Contoso.Portal --Hosts Web
+```
+
+Rows in this README marked for a host that was not generated do not apply.
+Each host creates and seeds the database on startup, so either one works
+alone.
+
+#### (s1.1.1) Web-only: external API configuration
+
+The Web app calls an API through the named `HttpClient` `ApiClient`, which
+reads `ApiBaseUrl`. The app starts without it, but every API call throws
+`InvalidOperationException` while it is empty.
+
+| Where it runs    | Set                                                                 |
+| ---------------- | ------------------------------------------------------------------- |
+| Local (`dotnet run`) | `ApiBaseUrl` in `solution/CleanArchitectureTemplate.Web/appsettings.Development.json` |
+| Docker Compose   | `API_BASE_URL` in `.env` (mapped to `ApiBaseUrl`)                    |
+| Other hosts      | Environment variable `ApiBaseUrl`                                    |
+
+The external API must expose the routes the Web services call, such as the
+weather forecast example, and accept the Web app's origin if it enforces
+CORS. Use an address the Web process can reach, for example
+`http://host.docker.internal:5018` from a container to an API on the host.
+
 ## (s2) Configuration reference
 
 Settings live in `appsettings.json` (defaults), `appsettings.{Environment}.json`
@@ -69,6 +110,7 @@ and environment variables (`Section__Key`).
 | `Localization:DefaultCulture` | Web | `en-US` | Default request culture. |
 | `Localization:SupportedCultures` | Web | `["en-US"]` | Accepted cultures. |
 | `Uploads:RootPath` | Web | `wwwroot/uploads` | Folder for uploaded images, served at `/uploads`. |
+| `ApiBaseUrl` | Web | none | Base URL of the API used by `ApiClient`. Required for API calls; see (s1.1.1). |
 | `JwtSettings:SecretKey` | API | none | At least 32 bytes. Required. |
 | `JwtSettings:Issuer`, `JwtSettings:Audience` | API | none | Required. |
 | `JwtSettings:ExpirationMinutes` | API | `60` | Access-token lifetime. |

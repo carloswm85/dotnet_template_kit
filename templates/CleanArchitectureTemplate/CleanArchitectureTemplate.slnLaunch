@@ -1,4 +1,5 @@
 [
+  //#if (Hosts == "Both")
   {
     "Name": "API + Web",
     "Projects": [
@@ -12,6 +13,8 @@
       }
     ]
   },
+  //#endif
+  //#if (IncludeApi)
   {
     "Name": "API",
     "Projects": [
@@ -20,7 +23,13 @@
         "Action": "Start"
       }
     ]
+  //#if (IncludeWeb)
   },
+  //#else
+  }
+  //#endif
+  //#endif
+  //#if (IncludeWeb)
   {
     "Name": "Web",
     "Projects": [
@@ -30,4 +39,5 @@
       }
     ]
   }
+  //#endif
 ]

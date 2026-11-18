@@ -4,15 +4,25 @@
 #   test   - build the solution and run unit and integration tests
 #            (integration tests start SQL Server with Testcontainers, so the
 #            runner needs Docker: here through the docker:dind service).
+#if (Hosts == "Both")
 #   build  - build the Web and API images.
+#elseif (IncludeApi)
+#   build  - build the API image.
+#else
+#   build  - build the Web image.
+#endif
 #   push   - push the images to the GitLab Container Registry (manual).
 #   deploy - call a deployment webhook, e.g. Portainer (manual, optional).
 
 variables:
     # Image tag: branch or tag name, made safe for Docker ("feature/x" -> "feature-x").
     TAG_NAME: $CI_COMMIT_REF_SLUG
+#if (IncludeWeb)
     WEB_IMAGE: $CI_REGISTRY_IMAGE/web:$TAG_NAME
+#endif
+#if (IncludeApi)
     API_IMAGE: $CI_REGISTRY_IMAGE/api:$TAG_NAME
+#endif
     # Set these as masked CI/CD variables in the project settings, not here.
     # DEPLOY_WEBHOOK_URL_MAIN: ""
     # DEPLOY_WEBHOOK_URL_DEV: ""
@@ -55,9 +65,19 @@ build_images:
     extends: .docker
     stage: build
     script:
+#if (IncludeWeb)
         - docker build --build-arg GIT_COMMIT_HASH=$CI_COMMIT_SHA -t "$WEB_IMAGE" -f solution/CleanArchitectureTemplate.Web/Dockerfile .
+#endif
+#if (IncludeApi)
         - docker build -t "$API_IMAGE" -f solution/CleanArchitectureTemplate.API/Dockerfile .
+#endif
+#if (Hosts == "Both")
         - docker save "$WEB_IMAGE" "$API_IMAGE" -o images.tar
+#elseif (IncludeApi)
+        - docker save "$API_IMAGE" -o images.tar
+#else
+        - docker save "$WEB_IMAGE" -o images.tar
+#endif
     artifacts:
         paths:
             - images.tar
@@ -71,8 +91,12 @@ push_images:
     stage: push
     script:
         - docker load -i images.tar
+#if (IncludeWeb)
         - docker push "$WEB_IMAGE"
+#endif
+#if (IncludeApi)
         - docker push "$API_IMAGE"
+#endif
     rules:
         - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "dev"
           when: manual

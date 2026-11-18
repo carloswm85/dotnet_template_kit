@@ -14,6 +14,10 @@
   </Project>
   <Project Path="solution/CleanArchitectureTemplate.Infrastructure/CleanArchitectureTemplate.Infrastructure.csproj" />
   <Project Path="solution/CleanArchitectureTemplate.ApplicationCore/CleanArchitectureTemplate.ApplicationCore.csproj" />
+  <!--#if (IncludeApi) -->
   <Project Path="solution/CleanArchitectureTemplate.API/CleanArchitectureTemplate.API.csproj" />
+  <!--#endif -->
+  <!--#if (IncludeWeb) -->
   <Project Path="solution/CleanArchitectureTemplate.Web/CleanArchitectureTemplate.Web.csproj" />
+  <!--#endif -->
 </Solution>

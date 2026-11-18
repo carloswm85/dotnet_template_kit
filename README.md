@@ -7,6 +7,7 @@
   - [(4) Installation](#4-installation)
   - [(5) Quick start](#5-quick-start)
   - [(6) Template options](#6-template-options)
+    - [(6.1) Clean Architecture host selection](#61-clean-architecture-host-selection)
   - [(7) Documentation](#7-documentation)
   - [(8) Project status](#8-project-status)
   - [(9) Contributing](#9-contributing)
@@ -137,6 +138,34 @@ Example with documentation included:
 dotnet new <template-name> `
     --name ContosoBackOffice `
     --IncludeDocumentation true
+```
+
+### (6.1) Clean Architecture host selection
+
+`dtk-clean-architecture` also accepts `--Hosts`, which selects the host
+projects to generate. ApplicationCore, Infrastructure, and the test projects
+are always generated.
+
+| Value  | Generates          | Notes                                                       |
+| ------ | ------------------ | ----------------------------------------------------------- |
+| `Both` | API and Web        | Default. Same output as before the option existed           |
+| `API`  | API only           | REST API with JWT; no MVC project                           |
+| `Web`  | Web only           | MVC app; set `ApiBaseUrl` to an external API (see template docs) |
+
+The option also trims the solution, `.slnLaunch` profiles, Docker Compose
+services, `.env.example`, the CI example, and the host-specific integration
+tests.
+
+```powershell
+dotnet new dtk-clean-architecture --name Contoso.Api --Hosts API
+dotnet new dtk-clean-architecture --name Contoso.Portal --Hosts Web
+dotnet new dtk-clean-architecture --name Contoso.Suite --Hosts Both
+```
+
+Run the template smoke test for all three modes from the repository root:
+
+```powershell
+./scripts/Test-CleanArchitectureTemplate.ps1
 ```
 
 ---

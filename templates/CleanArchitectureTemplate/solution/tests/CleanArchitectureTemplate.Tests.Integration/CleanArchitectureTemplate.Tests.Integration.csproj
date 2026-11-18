@@ -12,7 +12,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--#if (IncludeApi) -->
     <ProjectReference Include="..\..\CleanArchitectureTemplate.API\CleanArchitectureTemplate.API.csproj" />
+    <!--#endif -->
+    <!--#if (IncludeWeb) -->
     <ProjectReference Include="..\..\CleanArchitectureTemplate.Web\CleanArchitectureTemplate.Web.csproj" />
+    <!--#endif -->
   </ItemGroup>
 </Project>
