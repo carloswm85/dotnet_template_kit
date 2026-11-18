@@ -1,8 +1,9 @@
 <!-- [cb1] -->
 
 - [TODO](#todo)
-  - [(s1) Next task](#s1-next-task)
+  - [(s1) Completed: host selection](#s1-completed-host-selection)
     - [(s1.1) Acceptance criteria](#s11-acceptance-criteria)
+    - [(s1.2) Verification](#s12-verification)
   - [(s2) Clean Architecture test report](#s2-clean-architecture-test-report)
     - [(s2.1) Test results](#s21-test-results)
     - [(s2.2) Findings](#s22-findings)
@@ -16,7 +17,9 @@
 
 ---
 
-## (s1) Next task
+## (s1) Completed: host selection
+
+✅ Done in commit `b4d4079` (template package version `2.1`).
 
 Add a `dotnet new dtk-clean-architecture` option that lets the user generate
 only the API project, only the Web project, or both projects.
@@ -30,16 +33,34 @@ preserve the current behavior.
 
 _[L1]_ The selective-generation feature must satisfy these requirements:
 
-- Define the option in the Clean Architecture `template.json` file.
-- Support `API`, `Web`, and `Both` values with clear help text.
-- Keep `Both` as the default for backward compatibility.
-- Exclude unselected project files from generated output.
-- Exclude unselected projects from the generated solution.
-- Remove or conditionally configure dependencies on an excluded host.
-- Ensure the Web-only selection has a documented external API configuration.
-- Ensure restore, build, and applicable tests pass for every selection.
-- Add smoke tests for all three generation modes.
-- Update the root and Clean Architecture template documentation with examples.
+- [x] Define the option in the Clean Architecture `template.json` file.
+- [x] Support `API`, `Web`, and `Both` values with clear help text.
+- [x] Keep `Both` as the default for backward compatibility.
+- [x] Exclude unselected project files from generated output.
+- [x] Exclude unselected projects from the generated solution.
+- [x] Remove or conditionally configure dependencies on an excluded host.
+- [x] Ensure the Web-only selection has a documented external API
+  configuration.
+- [x] Ensure restore, build, and applicable tests pass for every selection.
+- [x] Add smoke tests for all three generation modes.
+- [x] Update the root and Clean Architecture template documentation with
+  examples.
+
+### (s1.2) Verification
+
+`scripts/Test-CleanArchitectureTemplate.ps1` passed for every mode, and a
+manual test of the generated solutions confirmed the results.
+
+**[t3]**
+
+| # | `--Hosts` | Build | Unit | Integration | Status |
+| --- | --- | --- | --- | --- | --- |
+| `r12` | `API` | 0 errors | 2 of 2 | 20 of 20 | ✅ |
+| `r13` | `Web` | 0 errors | 2 of 2 | 38 of 38 | ✅ |
+| `r14` | `Both` | 0 errors | 2 of 2 | 47 of 47 | ✅ |
+
+Each Release build reports one warning, CS8602, in
+`ApplicationCore/Extensions/ServiceExtensions.cs:19`.
 
 ## (s2) Clean Architecture test report
 
@@ -93,6 +114,6 @@ _[L3]_ Recommended implementation order:
 
 1. Correct the weather API route mismatch.
 1. Configure the test runner so zero executed tests cannot report success.
-1. Implement and test the API, Web, and Both generation modes.
+1. ✅ Implement and test the API, Web, and Both generation modes.
 1. Isolate integration-test databases or disable conflicting parallel setup.
 1. Decide whether to retain or replace Fluent Assertions 8.8.0.
