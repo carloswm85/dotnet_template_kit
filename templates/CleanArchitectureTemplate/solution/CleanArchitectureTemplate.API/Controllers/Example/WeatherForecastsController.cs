@@ -64,7 +64,7 @@ public class WeatherForecastsController : ControllerBase
     /// Generates five random weather forecast entries starting from tomorrow.
     ///
     /// Route:
-    /// GET /api/weatherforecasts/data
+    /// GET /api/v1/WeatherForecasts/weatherList
     /// </remarks>
     /// <returns>
     /// A collection of <see cref="WeatherForecast"/> objects

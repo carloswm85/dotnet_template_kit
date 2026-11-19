@@ -3,26 +3,26 @@
 ###
 
 ### Weather forecast endpoint
-GET {{CleanArchitectureTemplate.Server_HostAddress}}/api/WeatherForecasts/data
+GET {{CleanArchitectureTemplate.Server_HostAddress}}/api/v1/WeatherForecasts/weatherList
 Accept: application/json
 
 ###
 
 ### Get all students
-GET {{CleanArchitectureTemplate.Server_HostAddress}}/api/ContosoUniversity/students
+GET {{CleanArchitectureTemplate.Server_HostAddress}}/api/v1/ContosoUniversity/students
 Accept: application/json
 
 ###
 
 ### Get student by Id
 @studentId = 1
-GET {{CleanArchitectureTemplate.Server_HostAddress}}/api/ContosoUniversity/students/{{studentId}}
+GET {{CleanArchitectureTemplate.Server_HostAddress}}/api/v1/ContosoUniversity/students/{{studentId}}
 Accept: application/json
 
 ###
 
 ### Create student
-POST {{CleanArchitectureTemplate.Server_HostAddress}}/api/ContosoUniversity/students
+POST {{CleanArchitectureTemplate.Server_HostAddress}}/api/v1/ContosoUniversity/students
 Content-Type: application/json
 
 {
@@ -38,7 +38,7 @@ Content-Type: application/json
 
 ### Update student
 @studentId = 1
-PUT {{CleanArchitectureTemplate.Server_HostAddress}}/api/ContosoUniversity/students/{{studentId}}
+PUT {{CleanArchitectureTemplate.Server_HostAddress}}/api/v1/ContosoUniversity/students/{{studentId}}
 Content-Type: application/json
 
 {
@@ -52,6 +52,6 @@ Content-Type: application/json
 
 ### Delete student
 @studentId = 99
-DELETE {{CleanArchitectureTemplate.Server_HostAddress}}/api/ContosoUniversity/students/{{studentId}}
+DELETE {{CleanArchitectureTemplate.Server_HostAddress}}/api/v1/ContosoUniversity/students/{{studentId}}
 
 ###

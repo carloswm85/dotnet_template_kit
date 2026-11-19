@@ -9,6 +9,15 @@
     <PackageReference Include="xunit.v3" />
   </ItemGroup>
 
+  <!-- VSTest adapter: without it `dotnet test` finds no tests and still passes. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\CleanArchitectureTemplate.ApplicationCore\CleanArchitectureTemplate.ApplicationCore.csproj" />
   </ItemGroup>

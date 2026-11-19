@@ -92,8 +92,8 @@ processes used for smoke testing were stopped after validation.
 
 | # | Status | Finding |
 | --- | --- | --- |
-| `r8` | ❌ | The Web weather client and API weather route do not match. |
-| `r9` | ❌ | `dotnet test` exits successfully without executing tests. |
+| `r8` | ✅ | Fixed: the Web weather client now calls the API weather route. |
+| `r9` | ✅ | Fixed: `dotnet test` now discovers and runs the tests. |
 | `r10` | 🤔 | Integration tests pass but log concurrent database-creation errors. |
 | `r11` | 🤔 | Fluent Assertions 8.8.0 emits a commercial-use licensing warning. |
 
@@ -102,9 +102,19 @@ _[L2]_ Follow-up details for the findings:
 - The Web client requests `api/WeatherForecasts/data`, while the API exposes
   `api/v{version}/WeatherForecasts/weatherList`. The actual API route returned
   five items, but the Web page displayed none.
+  - ✅ Resolution: `WeatherForecastService` calls
+    `api/v1/WeatherForecasts/weatherList`. The controller comment and the API
+    `.http` file now include the `v1` segment. Verified live: the API returned
+    five items, the old route returned 404, and the Web page listed five
+    forecasts.
 - The xUnit v3 projects are executables. Running them with `dotnet run` executed
   all 49 tests, while `dotnet test` returned success without executing tests.
   This behavior can create false-positive CI results.
+  - ✅ Resolution: both test projects reference `Microsoft.NET.Test.Sdk`
+    18.12.0 and `xunit.runner.visualstudio` 4.0.1 (central versions). The
+    smoke script runs `dotnet test` with
+    `RunConfiguration.TreatNoTestsAsError=true`, and every mode reported the
+    same totals as `dotnet run` (API 2 + 20, Web 2 + 38, Both 2 + 47).
 - Multiple integration-test fixtures use the same LocalDB database name. This
   causes database-already-exists errors in the logs even though all tests pass.
 - Review the Fluent Assertions license before using version 8.8.0 in a
@@ -112,8 +122,8 @@ _[L2]_ Follow-up details for the findings:
 
 _[L3]_ Recommended implementation order:
 
-1. Correct the weather API route mismatch.
-1. Configure the test runner so zero executed tests cannot report success.
+1. ✅ Correct the weather API route mismatch.
+1. ✅ Configure the test runner so zero executed tests cannot report success.
 1. ✅ Implement and test the API, Web, and Both generation modes.
 1. Isolate integration-test databases or disable conflicting parallel setup.
 1. Decide whether to retain or replace Fluent Assertions 8.8.0.

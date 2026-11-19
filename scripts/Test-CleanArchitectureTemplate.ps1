@@ -3,7 +3,8 @@ function Test-CleanArchitectureTemplate {
     @desc   Smoke-tests the DTK Clean Architecture template: installs it from
             this repository and, for each host mode (API, Web, Both),
             generates a solution under a different name, builds it, runs the
-            unit and integration tests, checks that only the selected host
+            unit and integration tests (with `dotnet run` and with
+            `dotnet test`), checks that only the selected host
             projects exist, and checks that no "CleanArchitectureTemplate"
             text survived the rename.
     @alias  tcat
@@ -129,6 +130,15 @@ function Test-CleanArchitectureTemplate {
             foreach ($project in $testProjects) {
                 Invoke-Step "[$mode] $($project.BaseName)" {
                     dotnet run --no-build -c Release --project $project.FullName
+                }
+            }
+
+            # `dotnet test` must discover and run the same tests through the
+            # VSTest adapter; finding none is an error, not a silent pass.
+            foreach ($project in $testProjects) {
+                Invoke-Step "[$mode] dotnet test $($project.BaseName)" {
+                    dotnet test $project.FullName --no-build -c Release `
+                        -- RunConfiguration.TreatNoTestsAsError=true
                 }
             }
 

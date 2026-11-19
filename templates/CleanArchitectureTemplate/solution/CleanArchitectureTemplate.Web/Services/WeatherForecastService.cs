@@ -17,7 +17,8 @@ namespace CleanArchitectureTemplate.Web.Services
         {
             try
             {
-                var response = await _client.GetAsync("api/WeatherForecasts/data");
+                // Matches WeatherForecastsController: api/v{version}/[controller]/weatherList.
+                var response = await _client.GetAsync("api/v1/WeatherForecasts/weatherList");
                 response.EnsureSuccessStatusCode();
                 var content = await response.Content.ReadAsStringAsync();
 
